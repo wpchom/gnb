@@ -1,0 +1,18 @@
+buildconfig = getenv("GNB_DIR") + "/dotfiles/BUILDCONFIG.gn"
+script_executable = "python3"
+
+export_compile_commands = ["*"]
+
+default_args = {
+  dotfile_toolchain = "gcc"
+
+  dotfile_asmflags = []
+  dotfile_cflags = [
+    "-g",
+    "-Og",
+  ]
+  dotfile_cflags_c = []
+  dotfile_cflags_cc = []
+  dotfile_arflags = []
+  dotfile_ldflags = []
+}

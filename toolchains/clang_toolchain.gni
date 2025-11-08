@@ -1,0 +1,198 @@
+template("clang_toolchain") {
+  not_needed(invoker, "*")
+
+  toolchain(target_name) {
+    if (defined(invoker.ccache)) {
+      ccache = invoker.ccache
+    } else {
+      ccache = exec_script(gnb_which,
+                           [
+                             "ccache",
+                             "sccache",
+                           ],
+                           "string")
+    }
+
+    if (defined(invoker.prefix)) {
+      prefix = invoker.prefix
+    } else {
+      prefix = ""
+    }
+
+    if (defined(invoker.bindir)) {
+      asm = rebase_path("${prefix}clang", "", invoker.bindir)
+      cc = rebase_path("${prefix}clang", "", invoker.bindir)
+      cxx = rebase_path("${prefix}clang++", "", invoker.bindir)
+      alink = rebase_path("${prefix}llvm-ar", "", invoker.bindir)
+      solink = rebase_path("${prefix}clang++", "", invoker.bindir)
+      link = rebase_path("${prefix}clang++", "", invoker.bindir)
+    } else {
+      asm = "${prefix}clang"
+      cc = "${prefix}clang"
+      cxx = "${prefix}clang++"
+      alink = "${prefix}llvm-ar"
+      solink = "${prefix}clang++"
+      link = "${prefix}clang++"
+    }
+
+    if (defined(invoker.asmflags)) {
+      toolchain_asmflags = invoker.asmflags
+    } else {
+      toolchain_asmflags = ""
+    }
+
+    if (defined(invoker.cflags)) {
+      toolchain_cflags = string_join(" ", invoker.cflags)
+    } else {
+      toolchain_cflags = ""
+    }
+    if (defined(invoker.cflags_c)) {
+      toolchain_cflags_c = string_join(" ", invoker.cflags_c)
+    } else {
+      toolchain_cflags_c = ""
+    }
+    if (defined(invoker.cflags_cc)) {
+      toolchain_cflags_cc = string_join(" ", invoker.cflags_cc)
+    } else {
+      toolchain_cflags_cc = ""
+    }
+    if (defined(invoker.arflags)) {
+      toolchain_arflags = string_join(" ", invoker.arflags)
+    } else {
+      toolchain_arflags = ""
+    }
+    if (defined(invoker.ldflags)) {
+      toolchain_ldflags = string_join(" ", invoker.ldflags)
+    } else {
+      toolchain_ldflags = ""
+    }
+
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
+
+    tool("asm") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${compiler_cache} ${asm} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_asmflags} {{asmflags}} -c {{source}} -o {{output}}"
+      description = "CLANG-AS {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cc") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${compiler_cache} ${cc} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_c} {{cflags_c}} -c {{source}} -o {{output}}"
+      description = "CLANG-CC {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cxx") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${compiler_cache} ${cxx} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_cc} {{cflags_cc}} -c {{source}} -o {{output}}"
+      description = "CLANG-CXX {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("alink") {
+      command = "${compiler_cache} ${alink} ${toolchain_arflags} {{arflags}} -rcsD {{output}} {{inputs}}"
+      description = "LLVM-AR {{output}}"
+
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
+      default_output_dir = "{{target_out_dir}}"
+      default_output_extension = ".a"
+      output_prefix = "lib"
+    }
+
+    tool("solink") {
+      soname = "{{target_output_name}}{{output_extension}}"
+      sofile = "{{output_dir}}/${soname}"
+
+      soname_flag = ""
+      rspfile_flag = "{{inputs}} {{solibs}} {{libs}}"
+
+      command = "${compiler_cache} ${solink} -shared ${toolchain_ldflags} {{ldflags}} ${soname_flag} -o \"${sofile}\" ${rspfile_flag}"
+      description = "CLANG-SOLINK ${sofile}"
+
+      link_output = sofile
+      depend_output = sofile
+
+      outputs = [ sofile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".so"
+      output_prefix = "lib"
+    }
+
+    tool("link") {
+      outname = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{output_dir}}/${outname}"
+
+      rspfile_flag = "{{inputs}} {{solibs}} {{libs}}"
+
+      command = "${compiler_cache} ${link} ${toolchain_ldflags} {{ldflags}} -o \"${outfile}\" ${rspfile_flag}"
+      description = "CLANG-LINK ${outfile}"
+
+      outputs = [ outfile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".elf"
+    }
+
+    tool("stamp") {
+      if (host_os == "win") {
+        command = "type nul > {{output}}"
+      } else {
+        command = "touch {{output}}"
+      }
+      description = "STAMP {{output}}"
+    }
+
+    tool("copy") {
+      if (host_os == "win") {
+        command = "xcopy /-Y  {{source}} {{output}}"
+      } else {
+        command = "cp -af {{source}} {{output}}"
+      }
+      description = "COPY {{source}} {{output}}"
+    }
+  }
+}
+
+template("clang_action") {
+  action(target_name) {
+    assert(invoker.script != "")
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "script",
+                             "args",
+                           ])
+
+    script = gnb_run
+    args = []
+
+    if (defined(invoker.bindir)) {
+      if (defined(invoker.prefix)) {
+        args +=
+            [ rebase_path(invoker.prefix + invoker.script, "", invoker.bindir) ]
+      } else {
+        args += [ rebase_path(invoker.script, "", invoker.bindir) ]
+      }
+    } else {
+      if (defined(invoker.prefix)) {
+        args += [ invoker.prefix + invoker.script ]
+      } else {
+        args += [ invoker.script ]
+      }
+    }
+
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+  }
+}

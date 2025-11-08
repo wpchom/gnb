@@ -1,0 +1,12 @@
+declare_toolchain(dotfile_toolchain) {
+}
+
+config("sub_config") {
+  include_dirs = [ "./" ]
+}
+
+static_library("sub") {
+  sources = [ "sub.c" ]
+
+  public_configs = [ ":sub_config" ]
+}

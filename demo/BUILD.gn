@@ -1,0 +1,8 @@
+declare_toolchain(dotfile_toolchain) {
+}
+
+executable("demo") {
+  sources = [ "demo.c" ]
+
+  deps = [ "sub/:sub" ]
+}
