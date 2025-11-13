@@ -1,0 +1,29 @@
+assert(defined(gnb_repo_dir))
+
+declare_args() {
+  gnb_pkgs_dir = rebase_path("${gnb_repo_dir}/packages")
+}
+
+template("pkggroup") {
+  not_needed(invoker, "*")
+
+  group(target_name) {
+    pkg_path = exec_script("${gnb_repo_dir}/scripts/pkgpath.py",
+                           [
+                             "--pkgsrc",
+                             gnb_pkgs_dir,
+                             target_name,
+                           ],
+                           "string")
+
+    public_deps = []
+
+    if (defined(invoker.deps)) {
+      foreach(dep, invoker.deps) {
+        public_deps += [ "${pkg_path}/:${dep}" ]
+      }
+    } else {
+      public_deps += [ "${pkg_path}/:${target_name}" ]
+    }
+  }
+}

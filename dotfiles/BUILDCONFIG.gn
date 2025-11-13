@@ -1,5 +1,6 @@
 declare_args() {
-  gnb_dir = getenv("GNB_DIR")
+  gnb_repo_dir = getenv("GNB_REPO_DIR")
+
 
   # toolchain flags
   dotfile_toolchain = "default"
@@ -13,8 +14,8 @@ declare_args() {
 
 declare_args() {
   # scripts
-  gnb_run = rebase_path("${gnb_dir}/scripts/run.py")
-  gnb_which = rebase_path("${gnb_dir}/scripts/which.py")
+  gnb_run = rebase_path("${gnb_repo_dir}/scripts/run.py")
+  gnb_which = rebase_path("${gnb_repo_dir}/scripts/which.py")
 }
 
 # toolchain
@@ -24,7 +25,7 @@ template("declare_toolchain") {
   not_needed(invoker, "*")
 
   if (target_name == "gcc" || target_name == "default") {
-    import("${gnb_dir}/toolchains/gcc_toolchain.gni")
+    import("${gnb_repo_dir}/toolchains/gcc_toolchain.gni")
     gcc_toolchain("${dotfile_toolchain}") {
       asmflags = dotfile_asmflags
       cflags = dotfile_cflags
@@ -34,7 +35,7 @@ template("declare_toolchain") {
       ldflags = dotfile_ldflags
     }
   } else if (target_name == "clang") {
-    import("${gnb_dir}/toolchains/clang_toolchain.gni")
+    import("${gnb_repo_dir}/toolchains/clang_toolchain.gni")
     clang_toolchain("${dotfile_toolchain}") {
       asmflags = dotfile_asmflags
       cflags = dotfile_cflags
@@ -50,4 +51,4 @@ template("declare_toolchain") {
 }
 
 # package
-import("${gnb_dir}/packages/package.gni")
+import("${gnb_repo_dir}/dotfiles/package.gni")

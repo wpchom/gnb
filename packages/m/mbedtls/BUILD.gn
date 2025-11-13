@@ -1,0 +1,25 @@
+declare_args() {
+  mbedtls_pkgver = "latest"
+
+  # config
+  mbedtls_confile = ""
+}
+
+declare_args() {
+  # package download
+  mbedtls_pkgdir = ""
+}
+
+config("mbedtls_config") {
+  include_dirs = [ "${mbedtls_pkgdir}/include" ]
+
+  if (defined(mbedtls_confile) && mbedtls_confile != "") {
+    defines = [ "MBEDTLS_CONFIG_FILE=\"${mbedtls_confile}\"" ]
+  }
+}
+
+static_library("mbedtls") {
+  # add different version source files
+
+  # add tf-psa-crypto
+}

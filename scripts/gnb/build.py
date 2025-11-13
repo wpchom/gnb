@@ -3,7 +3,9 @@
 
 import os
 import sys
-from . import debug, info, error
+import time
+import subprocess
+from . import utils, clean
 
 sys.dont_write_bytecode = True
 
@@ -41,7 +43,7 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def action(args):
+def module(args):
     if ("builddir" in args) and (args.builddir != None):
         args.builddir = os.path.abspath(args.builddir)
     else:
@@ -53,15 +55,15 @@ def action(args):
         elif os.path.exists(os.path.join(args.builddir, args.dotfile)):
             args.dotfile = os.path.join(args.builddir, args.dotfile)
         else:
-            dotfile = os.path.join(args.gnb_dir, "dotfiles", args.dotfile)
+            dotfile = os.path.join(args.repo_dir, "dotfiles", args.dotfile)
             if not dotfile.endswith(".gn"):
                 dotfile += ".gn"
             if os.path.exists(dotfile):
                 args.dotfile = dotfile
             else:
-                error(1, f"`{args.dotfile}` not exists")
+                utils.error(f"`{args.dotfile}` not exists")
     else:
-        args.dotfile = os.path.join(args.gnb_dir, "dotfiles", "debug.gn")
+        args.dotfile = os.path.join(args.repo_dir, "dotfiles", "debug.gn")
 
     if ("outdir" in args) and (args.outdir != None):
         args.outdir = os.path.abspath(args.outdir)
@@ -72,72 +74,62 @@ def action(args):
         args.args = []
 
     if ("rebuild" in args) and args.rebuild:
-        from . import clean
+        clean.module(args)
 
-        clean.action(args)
+    build_action(
+        args.builddir,
+        args.dotfile,
+        args.outdir,
+        args.args,
+        args.repo_dir,
+        args.pkgs_dir,
+        args.cache_dir,
+        args.proxy,
+        args.verbose,
+    )
 
-    _build(args)
 
-
-def _build(args):
-    import time, subprocess
-    from . import check_gn, check_ninja
-
+def build_action(
+    builddir, dotfile, outdir, buildargs, repo_dir, pkgs_dir, cache_dir, proxy, verbose
+):
     stime = time.perf_counter()
-    info(f"Building action start `{args.builddir}` with `{args.dotfile}`")
+    utils.info(f"Building action start `{builddir}` with `{dotfile}`")
 
     # gn gen
-    gn_bin = check_gn(args.cache_dir, args.proxy)
-    gn_command = [gn_bin, "gen", args.outdir, "--export-compile-commands"]
-    gn_command += ["--root=%s" % args.builddir, "--dotfile=%s" % args.dotfile]
+    gn_bin = utils.check_gn(pkgs_dir, cache_dir, proxy)
+    gn_command = [gn_bin, "gen", outdir, "--export-compile-commands"]
+    gn_command += ["--root=%s" % builddir, "--dotfile=%s" % dotfile]
 
-    if len(args.args) > 0:
-        gn_command += ["--args=%s" % " ".join(args.args)]
+    buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + buildargs if buildargs else []
+    gn_command += ["--args=%s" % " ".join(buildargs)]
 
-    if args.verbose:
-        debug(" ".join(gn_command))
+    if verbose:
+        utils.debug(" ".join(gn_command))
 
     # git ignore
-    os.makedirs(args.outdir, exist_ok=True)
-    with open(os.path.join(args.outdir, ".gitignore"), "w+") as f:
+    os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, ".gitignore"), "w+") as f:
         f.write("*\n")
 
     ret = subprocess.run(
-        gn_command, cwd=args.builddir, check=False, env={"GNB_DIR": args.gnb_dir}
+        gn_command, cwd=builddir, check=False, env={"GNB_REPO_DIR": repo_dir}
     )
     if ret.returncode != 0:
-        error(ret.returncode, " ".join(gn_command))
+        utils.error(" ".join(gn_command))
 
     # ninja build
-    ninja_bin = check_ninja(args.cache_dir, args.proxy)
-    ninja_command = [ninja_bin, "-C", args.outdir]
+    ninja_bin = utils.check_ninja(pkgs_dir, cache_dir, proxy)
+    ninja_command = [ninja_bin, "-C", outdir]
 
-    if args.verbose:
+    if verbose:
         ninja_command += ["-v"]
-        debug(" ".join(ninja_command))
+        utils.debug(" ".join(ninja_command))
 
-    ret = subprocess.run(ninja_command, cwd=args.outdir, check=False)
+    ret = subprocess.run(ninja_command, cwd=outdir, check=False)
 
     # complete
     etime = time.perf_counter()
     if ret.returncode == 0:
-        info(f"Building action finished cost time: {etime - stime:.3f}s")
+        utils.info(f"Building action finished cost time: {etime - stime:.3f}s")
     else:
-        error(
-            ret.returncode,
-            f"Building action error cost time: {etime - stime:.3f}s",
-        )
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    _parser_arguments(parser)
-
-    args = parser.parse_args()
-    args.gnb_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    args.cache_dir = os.path.join(args.gnb_dir, "cache")
-
-    try:
-        action(args)
-    except KeyboardInterrupt:
-        error(1, "KeyboardInterrupt")
+        utils.error(f"Building action error cost time: {etime - stime:.3f}s")

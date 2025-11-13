@@ -5,78 +5,94 @@ import os
 import sys
 import shutil
 import subprocess
+from . import utils
 
 sys.dont_write_bytecode = True
 
-from . import error
 
+def _download_by_curl(url, dir, proxy, cont=False, timeout=30):
+    curl_bin = shutil.which("curl")
+    if curl_bin == None:
+        utils.error("curl not found")
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
+    curl_command = [
+        curl_bin,
+        "-OJsL",
+        "--max-time",
+        str(timeout),
+        "--write-out",
+        "%{filename_effective}",
+        "--user-agent",
+        utils.USER_AGENT,
+    ]
 
-
-def _download_by_curl(url, path, proxy):
-    if path == None:
-        cmd_curl = ["curl", "-L", url, "-O"]
-    else:
-        cmd_curl = ["curl", "-L", url, "-o", path]
-
-    cmd_curl += ["-A", USER_AGENT]
     if proxy != None:
-        cmd_curl += ["--proxy", proxy]
+        curl_command += ["--proxy", proxy]
 
-    ret = subprocess.run(cmd_curl + ["--parallel"], check=False)
+    if cont:
+        curl_command += ["-C", "-"]
+    else:
+        pass
+
+    ret = subprocess.run(
+        curl_command + ["--parallel", url], cwd=dir, check=False, capture_output=True
+    )
     if ret.returncode == 2:
-        ret = subprocess.run(cmd_curl, check=False)
+        ret = subprocess.run(
+            curl_command + [url], cwd=dir, check=False, capture_output=True
+        )
 
-    return ret.returncode
+    return ret.returncode, ret.stdout.decode().strip()
 
 
-def _download_by_wget(url, path, proxy):
-    if path == None:
-        cmd_wget = ["wget", url]
+def download_from_url(url, download_path, proxy, timeout=30):
+    download_dir = os.path.dirname(download_path)
+    download_name = os.path.basename(download_path)
+
+    if os.path.exists(download_dir):
+        for f in os.listdir(download_dir):
+            if f.startswith(download_name + "."):
+                return os.path.join(download_dir, f)
     else:
-        cmd_wget = ["wget", url, "-O", path]
+        os.makedirs(download_dir, exist_ok=True)
 
-    cmd_wget += ["-U", USER_AGENT]
-    if proxy != None:
-        cmd_wget += ["--proxy", proxy]
+    download_tmp = os.path.join(download_dir, f"_{download_name}.tmp")
 
-    ret = subprocess.run(cmd_wget, check=False)
-    if ret.returncode != 0:
-        os.remove(path)
-
-    return ret.returncode
-
-
-def download_pkg(url, path, proxy):
-    if os.path.exists(path):
-        return
+    if not os.path.exists(download_tmp):
+        os.makedirs(download_tmp, exist_ok=True)
+        ret, download_file = _download_by_curl(url, download_tmp, proxy, False, timeout)
     else:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        ret, download_file = _download_by_curl(url, download_tmp, proxy, True, timeout)
 
-    path_tmp = path + ".tmp"
+    if (ret != 0) or (download_file == None):
+        shutil.rmtree(download_tmp)
+        utils.error(f"download `{url}` failed")
 
-    try:
-        ret = _download_by_curl(url, path_tmp, proxy)
-    except KeyboardInterrupt:
-        try:
-            os.remove(path_tmp)
-        except:
-            pass
+    if download_file.split(".")[-2] in ["tar"]:
+        download_name = f"{download_name}.{download_file.split('.')[-2]}.{download_file.split('.')[-1]}"
+    else:
+        download_name = f"{download_name}.{download_file.split('.')[-1]}"
 
-        raise (KeyboardInterrupt)
+    shutil.move(
+        os.path.join(download_tmp, download_file),
+        os.path.join(download_dir, download_name),
+    )
 
-    if ret != 0:
-        error(ret, f"download `{path_tmp}` from `{url}` failed")
+    if os.path.exists(download_tmp):
+        shutil.rmtree(download_tmp)
 
-    os.rename(path_tmp, path)
+    return os.path.join(download_dir, download_name)
 
 
-def download_git(url, branch, path, proxy):
+def download_from_git(url, branch, path, proxy):
+    git_bin = shutil.which("git")
+    if git_bin == None:
+        utils.error("git not found")
+
     if (not os.path.exists(path)) or (not ".git" in os.listdir(path)):
         try:
             os.makedirs(path, exist_ok=True)
-            git_command = ["git", "clone", url, path, "--depth=1", "--recursive"]
+            git_command = [git_bin, "clone", url, path, "--depth=1", "--recursive"]
             if branch != None:
                 git_command += ["-b", branch]
             if proxy != None:
@@ -89,7 +105,7 @@ def download_git(url, branch, path, proxy):
 
             ret = subprocess.run(git_command, check=False)
             if ret.returncode != 0:
-                error(f"git clone `{url}` failed")
+                utils.error(f"git clone `{url}` failed")
 
         except KeyboardInterrupt:
             try:
@@ -100,25 +116,25 @@ def download_git(url, branch, path, proxy):
 
     else:
         try:
-            ret = subprocess.run(["git", "status"], cwd=path)
-            if (
-                "Changes not staged for commit" in ret
-                or "Changes to be committed" in ret
+            git_command = [git_bin, "status"]
+            ret = subprocess.run(git_command, cwd=path, capture_output=True)
+
+            if b"Changes not staged for commit" in ret.stdout.strip() or (
+                b"Changes to be committed" in ret.stdout.strip()
             ):
-                error(
-                    ret.returncode, f"git repository `{path}` has uncommitted changes"
-                )
+                utils.error(f"git repository `{path}` has uncommitted changes")
 
-            ret = subprocess.run(["git", "fetch", "--all"], cwd=path)
+            git_command = [git_bin, "fetch", "--all"]
+            ret = subprocess.run(git_command, cwd=path)
             if ret.returncode != 0:
-                error(ret.returncode, f"git fetch `{path}` failed")
+                utils.error(f"git fetch `{path}` failed")
 
-            ret = subprocess.run(["git", "checkout", branch], cwd=path)
+            git_command = [git_bin, "checkout", branch]
+            ret = subprocess.run(git_command, cwd=path)
             if ret.returncode != 0:
-                error(ret.returncode, f"git checkout `{branch}` failed")
+                utils.error(f"git checkout `{branch}` failed")
 
         except Exception:
-            error(
-                ret.returncode,
-                f"git `{url}` branch `{branch}` fetch failed, remove it to retry",
+            utils.error(
+                f"git `{url}` branch `{branch}` fetch failed, remove it to retry"
             )

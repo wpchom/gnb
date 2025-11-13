@@ -1,8 +1,21 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import os
 import sys
+import subprocess
 
 sys.dont_write_bytecode = True
 
-os.system(' '.join([str(arg) for arg in sys.argv[1:]]))
+if len(sys.argv) < 2:
+    sys.stderr.write("Usage: run.py <command> [args...]\n")
+    sys.exit(1)
+
+try:
+    ret = subprocess.run(sys.argv[1:])
+    sys.exit(ret.returncode)
+except KeyboardInterrupt:
+    sys.stderr.write("\nInterrupted\n")
+    sys.exit(1)
+except Exception as e:
+    sys.stderr.write(f"Error: {str(e)}\n")
+    sys.exit(1)

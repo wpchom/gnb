@@ -1,0 +1,33 @@
+{
+    "name": "gn",
+    "type": "binary",
+    "versions": [
+        {
+            "version": "latest",
+            "url": {
+                "windows_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/windows-amd64/+/{version}",
+                "linux_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/{version}",
+                "linux_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-arm64/+/{version}",
+                "macos_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-amd64/+/{version}",
+                "macos_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-arm64/+/{version}"
+            },
+            "dir": {
+                "windows_x64": "gn.exe",
+                "linux_x64": "gn",
+                "linux_arm64": "gn",
+                "macos_x64": "gn",
+                "macos_arm64": "gn"
+            }
+        },
+        {
+            "version": "c4eb7329bf61c276544148febb9a51ede58783ba",
+            "url": {
+                "windows_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/windows-amd64/+/git_revision:{version}",
+                "linux_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-amd64/+/git_revision:{version}",
+                "linux_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-arm64/+/git_revision:{version}",
+                "macos_x64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-amd64/+/git_revision:{version}",
+                "macos_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-arm64/+/git_revision:{version}"
+            }
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+declare_args() {
+  demo_app_pkgver = "local"
+}
+
+declare_toolchain(dotfile_toolchain) {
+}
+
+pkggroup("demo_lib") {
+}
+
+executable("demo_app") {
+  sources = [ "src/demo_app.c" ]
+
+  deps = [ ":demo_lib" ]
+}

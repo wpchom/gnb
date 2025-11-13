@@ -1,0 +1,188 @@
+declare_args() {
+  # latest
+  arm_none_eabi_gcc_pkgver = "14.2.rel1"
+  # arm_none_eabi_gcc_pkgapi = ""
+}
+
+declare_args() {
+  if (!defined(arm_none_eabi_gcc_pkgdir)) {
+    if (host_os == "windows") {
+      if (host_cpu == "x86") {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-mingw-w64-i686-arm-none-eabi.zip"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-mingw-w64-i686-arm-none-eabi/bin"
+      } else {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-mingw-w64-x86_64-arm-none-eabi.zip"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-mingw-w64-x86_64-arm-none-eabi/bin"
+      }
+    } else if (host_os == "linux") {
+      if (host_cpu == "arm64") {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-aarch64-arm-none-eabi.tar.xz"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-aarch64-arm-none-eabi/bin"
+      } else {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-x86_64-arm-none-eabi.tar.xz"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-x86_64-arm-none-eabi/bin"
+      }
+    } else if (host_os == "mac") {
+      if (host_cpu == "arm64") {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-arm64-arm-none-eabi.tar.xz"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-darwin-arm64-arm-none-eabi/bin"
+      } else {
+        arm_none_eabi_gcc_pkgurl = "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-x86_64-arm-none-eabi.tar.xz"
+        arm_none_eabi_gcc_pkgbin =
+            "arm-gnu-toolchain-{version}-darwin-x86_64-arm-none-eabi/bin"
+      }
+    }
+  }
+}
+
+template("arm_none_eabi_gcc") {
+  toolchain(target_name) {
+    not_needed(invoker, "*")
+
+    if (defined(invoker.ccache)) {
+      ccache = invoker.ccache
+    } else {
+      ccache = exec_script(gnb_which,
+                           [
+                             "ccache",
+                             "sccache",
+                           ],
+                           "string")
+    }
+
+    if (defined(invoker.prefix)) {
+      prefix = invoker.prefix
+    } else {
+      prefix = "arm-none-eabi-"
+    }
+
+    asm = rebase_path("${prefix}gcc", "", arm_none_eabi_gcc_pkgdir)
+    cc = rebase_path("${prefix}gcc", "", arm_none_eabi_gcc_pkgdir)
+    cxx = rebase_path("${prefix}g++", "", arm_none_eabi_gcc_pkgdir)
+    alink = rebase_path("${prefix}ar", "", arm_none_eabi_gcc_pkgdir)
+    solink = rebase_path("${prefix}g++", "", arm_none_eabi_gcc_pkgdir)
+    link = rebase_path("${prefix}g++", "", arm_none_eabi_gcc_pkgdir)
+
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
+
+    tool("asm") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${asm} -MMD -MF ${depfile} {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
+      description = "AS {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cc") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${cc} -MMD -MF ${depfile} {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      description = "CC {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cxx") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${cxx} -MMD -MF ${depfile} {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
+      description = "CXX {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("alink") {
+      command = "${ccache} ${alink} {{arflags}} -rcsD {{output}} {{inputs}}"
+      description = "AR {{output}}"
+
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
+      default_output_dir = "{{target_out_dir}}"
+      default_output_extension = ".a"
+      output_prefix = "lib"
+    }
+
+    tool("solink") {
+      soname = "{{target_output_name}}{{output_extension}}"
+      sofile = "{{output_dir}}/${soname}"
+
+      command = "${ccache} ${solink} -shared {{ldflags}} -o \"${sofile}\" -Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
+      description = "SOLINK ${sofile}"
+
+      link_output = sofile
+      depend_output = sofile
+
+      outputs = [ sofile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".so"
+      output_prefix = "lib"
+    }
+
+    tool("link") {
+      outname = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{output_dir}}/${outname}"
+
+      command = "${ccache} ${link} {{ldflags}} -o \"${outfile}\" -Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
+      description = "LINK ${outfile}"
+
+      outputs = [ outfile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".elf"
+    }
+
+    tool("stamp") {
+      if (host_os == "win") {
+        command = "type nul > {{output}}"
+      } else {
+        command = "touch {{output}}"
+      }
+      description = "STAMP {{output}}"
+    }
+
+    tool("copy") {
+      if (host_os == "win") {
+        command = "xcopy /-Y  {{source}} {{output}}"
+      } else {
+        command = "cp -af {{source}} {{output}}"
+      }
+      description = "COPY {{source}} {{output}}"
+    }
+  }
+}
+
+template("arm_none_eabi_action") {
+  action(target_name) {
+    assert(invoker.script != "")
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "script",
+                             "args",
+                           ])
+
+    script = "${mds_build_dir}/scripts/run.py"
+
+    if (defined(invoker.prefix)) {
+      args = [ rebase_path(invoker.prefix + invoker.script,
+                           "",
+                           arm_none_eabi_gcc_pkgdir) ]
+    } else {
+      args = [ rebase_path("arm-none-eabi-" + invoker.script,
+                           "",
+                           arm_none_eabi_gcc_pkgdir) ]
+    }
+
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+  }
+}

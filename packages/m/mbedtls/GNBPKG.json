@@ -1,0 +1,10 @@
+{
+    "name": "mbedtls",
+    "versions": [
+        {
+            "version": "4.0.0",
+            "url": "https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-{version}/mbedtls-{version}.tar.bz2",
+            "dir": ""
+        }
+    ]
+}

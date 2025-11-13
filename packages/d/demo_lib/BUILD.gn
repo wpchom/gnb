@@ -1,0 +1,16 @@
+declare_args() {
+  demo_lib_pkgver = "local"
+}
+
+declare_toolchain(dotfile_toolchain) {
+}
+
+config("config_demo_lib") {
+  include_dirs = [ "include" ]
+}
+
+static_library("demo_lib") {
+  sources = [ "src/demo_lib.c" ]
+
+  public_configs = [ ":config_demo_lib" ]
+}
