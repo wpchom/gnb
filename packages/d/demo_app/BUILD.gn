@@ -2,7 +2,7 @@ declare_args() {
   demo_app_pkgver = "local"
 }
 
-declare_toolchain(dotfile_toolchain) {
+declare_toolchain(profile_toolchain) {
 }
 
 pkggroup("demo_lib") {

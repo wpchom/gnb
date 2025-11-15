@@ -10,10 +10,10 @@ from . import utils
 sys.dont_write_bytecode = True
 
 
-def _download_by_curl(url, dir, proxy, cont=False, timeout=30):
+def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
     curl_bin = shutil.which("curl")
     if curl_bin == None:
-        utils.error("curl not found")
+        utils.error("`curl` not found")
 
     curl_command = [
         curl_bin,
@@ -41,6 +41,8 @@ def _download_by_curl(url, dir, proxy, cont=False, timeout=30):
         ret = subprocess.run(
             curl_command + [url], cwd=dir, check=False, capture_output=True
         )
+    if ret.returncode != 0:
+        utils.error(f"Download `{url}` failed")
 
     return ret.returncode, ret.stdout.decode().strip()
 
@@ -66,7 +68,7 @@ def download_from_url(url, download_path, proxy, timeout=30):
 
     if (ret != 0) or (download_file == None):
         shutil.rmtree(download_tmp)
-        utils.error(f"download `{url}` failed")
+        utils.error(f"Download `{url}` failed")
 
     if download_file.split(".")[-2] in ["tar"]:
         download_name = f"{download_name}.{download_file.split('.')[-2]}.{download_file.split('.')[-1]}"
@@ -87,7 +89,7 @@ def download_from_url(url, download_path, proxy, timeout=30):
 def download_from_git(url, branch, path, proxy):
     git_bin = shutil.which("git")
     if git_bin == None:
-        utils.error("git not found")
+        utils.error("`git` not found")
 
     if (not os.path.exists(path)) or (not ".git" in os.listdir(path)):
         try:
@@ -132,9 +134,9 @@ def download_from_git(url, branch, path, proxy):
             git_command = [git_bin, "checkout", branch]
             ret = subprocess.run(git_command, cwd=path)
             if ret.returncode != 0:
-                utils.error(f"git checkout `{branch}` failed")
+                utils.error(f"git checkout ({branch}) failed")
 
         except Exception:
             utils.error(
-                f"git `{url}` branch `{branch}` fetch failed, remove it to retry"
+                f"git `{url}` branch ({branch}) fetch failed, remove it to retry"
             )

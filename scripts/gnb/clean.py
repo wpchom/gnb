@@ -20,13 +20,13 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def module(args):
+def action(args):
     if (not os.path.exists(args.outdir)) or (
         not "build.ninja" in os.listdir(args.outdir)
     ):
         utils.info(f"`{args.outdir}` is not a build out dir")
 
-    ninja_bin = utils.check_ninja(args.cache_dir, args.proxy)
+    ninja_bin = utils.check_ninja(args.pkgs_dir, args.proxy)
 
     utils.info(f"Cleaning output directory `{args.outdir}`")
 

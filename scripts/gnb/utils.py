@@ -38,22 +38,20 @@ def error(*args):
     exit(1)
 
 
-def check_gn(pkgs_dir, cache_dir, proxy):
+def check_gn(pkgs_dir, proxy):
     gn_bin = shutil.which("gn")
 
     if gn_bin == None:
-        gn_bin = package.package_download("gn", "latest", pkgs_dir, cache_dir, proxy)
+        _, gn_bin = package.package_download("gn", "latest", pkgs_dir, proxy)
 
     return gn_bin
 
 
-def check_ninja(pkgs_dir, cache_dir, proxy):
+def check_ninja(pkgs_dir, proxy):
     ninja_bin = shutil.which("ninja")
 
     if ninja_bin == None:
-        ninja_bin = package.package_download(
-            "ninja", "latest", pkgs_dir, cache_dir, proxy
-        )
+        _, ninja_bin = package.package_download("ninja", "latest", pkgs_dir, proxy)
 
     return ninja_bin
 

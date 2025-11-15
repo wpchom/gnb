@@ -11,19 +11,19 @@ sys.dont_write_bytecode = True
 
 
 def _parser_arguments(parser):
-    parser.add_argument("target", nargs="?", default="default", help="target to build")
+    parser.add_argument("target", nargs="?", default=None, help="target to build")
     parser.add_argument(
         "-b", "--builddir", default=None, help="build root directory for gn"
     )
-    parser.add_argument("-d", "--dotfile", default=None, help="build dotfile for gn")
+    parser.add_argument("-p", "--profile", default=None, help="build profile for gn")
     parser.add_argument(
         "-o", "--outdir", default=None, help="build output directory for gn"
     )
 
     parser.add_argument("-v", "--verbose", action="store_true", default=False)
     parser.add_argument(
-        "-r",
-        "--rebuild",
+        "-c",
+        "--clean",
         action="store_true",
         default=False,
         help="clean outdir before build",
@@ -43,27 +43,32 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def module(args):
+def get_profile(repo_dir, builddir, profile, default="debug.gn"):
+    try:
+        if profile != None:
+            if os.path.exists(os.path.join(os.getcwd(), profile)):
+                return os.path.join(os.getcwd(), profile)
+            elif os.path.exists(os.path.join(builddir, profile)):
+                return os.path.join(builddir, profile)
+            else:
+                profile = os.path.join(repo_dir, "gnbuild", "profiles", profile)
+                if not profile.endswith(".gn"):
+                    profile += ".gn"
+                if os.path.exists(profile):
+                    return profile
+                else:
+                    utils.error(f"({profile}) not exists")
+    except:
+        return os.path.join(repo_dir, "gnbuild", "profiles", default)
+
+
+def action(args):
     if ("builddir" in args) and (args.builddir != None):
         args.builddir = os.path.abspath(args.builddir)
     else:
         args.builddir = os.path.abspath(os.getcwd())
 
-    if ("dotfile" in args) and (args.dotfile != None):
-        if os.path.exists(os.path.join(os.getcwd(), args.dotfile)):
-            args.dotfile = os.path.abspath(args.dotfile)
-        elif os.path.exists(os.path.join(args.builddir, args.dotfile)):
-            args.dotfile = os.path.join(args.builddir, args.dotfile)
-        else:
-            dotfile = os.path.join(args.repo_dir, "dotfiles", args.dotfile)
-            if not dotfile.endswith(".gn"):
-                dotfile += ".gn"
-            if os.path.exists(dotfile):
-                args.dotfile = dotfile
-            else:
-                utils.error(f"`{args.dotfile}` not exists")
-    else:
-        args.dotfile = os.path.join(args.repo_dir, "dotfiles", "debug.gn")
+    args.profile = get_profile(args.repo_dir, args.builddir, args.profile)
 
     if ("outdir" in args) and (args.outdir != None):
         args.outdir = os.path.abspath(args.outdir)
@@ -73,32 +78,40 @@ def module(args):
     if not "args" in args:
         args.args = []
 
-    if ("rebuild" in args) and args.rebuild:
-        clean.module(args)
+    if ("clean" in args) and args.clean:
+        clean.action(args)
 
     build_action(
         args.builddir,
-        args.dotfile,
+        args.profile,
         args.outdir,
         args.args,
         args.repo_dir,
         args.pkgs_dir,
-        args.cache_dir,
         args.proxy,
         args.verbose,
+        args.target if ("target" in args) and (args.target != "") else None,
     )
 
 
 def build_action(
-    builddir, dotfile, outdir, buildargs, repo_dir, pkgs_dir, cache_dir, proxy, verbose
+    builddir,
+    profile,
+    outdir,
+    buildargs,
+    repo_dir,
+    pkgs_dir,
+    proxy,
+    verbose,
+    target=None,
 ):
     stime = time.perf_counter()
-    utils.info(f"Building action start `{builddir}` with `{dotfile}`")
+    utils.info(f"Building action start `{builddir}` with `{profile}`")
 
     # gn gen
-    gn_bin = utils.check_gn(pkgs_dir, cache_dir, proxy)
+    gn_bin = utils.check_gn(pkgs_dir, proxy)
     gn_command = [gn_bin, "gen", outdir, "--export-compile-commands"]
-    gn_command += ["--root=%s" % builddir, "--dotfile=%s" % dotfile]
+    gn_command += ["--root=%s" % builddir, "--dotfile=%s" % profile]
 
     buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + buildargs if buildargs else []
     gn_command += ["--args=%s" % " ".join(buildargs)]
@@ -118,8 +131,11 @@ def build_action(
         utils.error(" ".join(gn_command))
 
     # ninja build
-    ninja_bin = utils.check_ninja(pkgs_dir, cache_dir, proxy)
+    ninja_bin = utils.check_ninja(pkgs_dir, proxy)
     ninja_command = [ninja_bin, "-C", outdir]
+
+    if (target != None) and (target != ""):
+        ninja_command += [target]
 
     if verbose:
         ninja_command += ["-v"]

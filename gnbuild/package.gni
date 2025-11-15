@@ -2,17 +2,18 @@ assert(defined(gnb_repo_dir))
 
 declare_args() {
   gnb_pkgs_dir = rebase_path("${gnb_repo_dir}/packages")
+  gnb_pkg_load = rebase_path("${gnb_repo_dir}/scripts/pkgload.py")
 }
 
 template("pkggroup") {
   not_needed(invoker, "*")
 
   group(target_name) {
-    pkg_path = exec_script("${gnb_repo_dir}/scripts/pkgpath.py",
+    pkg_path = exec_script(gnb_pkg_load,
                            [
+                             target_name,
                              "--pkgsrc",
                              gnb_pkgs_dir,
-                             target_name,
                            ],
                            "string")
 
@@ -23,7 +24,7 @@ template("pkggroup") {
         public_deps += [ "${pkg_path}/:${dep}" ]
       }
     } else {
-      public_deps += [ "${pkg_path}/:${target_name}" ]
+      public_deps += [ "${pkg_path}/:default" ]
     }
   }
 }

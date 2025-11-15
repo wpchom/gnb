@@ -38,7 +38,7 @@ def decompress(input_file, output_path, force):
         if force:
             shutil.rmtree(output_path)
         else:
-            utils.error(f"output directory already exists: {output_path}")
+            utils.error(f"Output directory already exists: `{output_path}`")
 
     if (input_file.split(".")[-2] in ["tar"]) or (
         input_file.split(".")[-1] in ["tgz", "tbz2", "txz"]
@@ -67,7 +67,7 @@ def decompress(input_file, output_path, force):
     try:
         _decompress_archive(input, output_path)
     except Exception as e:
-        utils.error(f"no decompress method for format: {input_file} ({str(e)})")
+        utils.error(f"No decompress method for format: `{input_file}` ({str(e)})")
 
 
 def _decompress_archive(input, output):
@@ -79,7 +79,7 @@ def _decompress_archive(input, output):
         import subprocess
 
         p7z_command = [p7z, "x", input, "-o", output]
-        ret = subprocess.run(p7z_command, cwd=output, check=False)
+        ret = subprocess.run(p7z_command, cwd=output, check=True)
         if ret.returncode != 0:
             utils.error("7z decompress failed")
 
@@ -108,4 +108,4 @@ def _decompress_archive(input, output):
                 py7z.close()
 
             except ImportError:
-                utils.error("please install `7z` or python module `libarchive`/`py7zr`")
+                utils.error("Please install `7z` or python module `libarchive`/`py7zr`")

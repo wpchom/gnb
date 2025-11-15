@@ -1,0 +1,18 @@
+buildconfig = getenv("GNB_REPO_DIR") + "/gnbuild/BUILDCONFIG.gn"
+script_executable = "python3"
+
+export_compile_commands = [ "*" ]
+
+default_args = {
+  profile_toolchain = "gcc"
+
+  profile_asmflags = []
+  profile_cflags = [
+    "-Os",
+    "-DNDEBUG",
+  ]
+  profile_cflags_c = []
+  profile_cflags_cc = []
+  profile_arflags = []
+  profile_ldflags = []
+}

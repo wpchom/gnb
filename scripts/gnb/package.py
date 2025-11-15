@@ -13,21 +13,22 @@ def _parser_arguments(parser):
     parser.add_argument("pkgname", metavar="PKGNAME", type=str, help="package name")
     parser.add_argument("-t", "--version", default=None, help="tag or version")
 
+    parser.add_argument(
+        "-c", "--clean", action="store_true", default=False, help="clean package"
+    )
+    parser.add_argument(
+        "-r", "--remove", action="store_true", default=False, help="remove package"
+    )
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "-d", "--download", action="store_true", default=False, help="download package"
     )
     group.add_argument(
-        "-r", "--remove", action="store_true", default=False, help="remove package"
-    )
-    group.add_argument(
         "-b", "--build", action="store_true", default=False, help="build package"
     )
     group.add_argument(
-        "-c", "--clean", action="store_true", default=False, help="clean package"
-    )
-    group.add_argument(
-        "-l", "--list", action="store_true", default=False, help="list package"
+        "-l", "--list", action="store_true", default=True, help="list package"
     )
 
 
@@ -36,13 +37,13 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def _pkg_package_path(package_dir, pkgname):
-    return os.path.join(package_dir, pkgname[0], pkgname)
+def _pkg_package_path(pkgs_dir, pkgname):
+    return os.path.join(pkgs_dir, pkgname[0], pkgname)
 
 
-def _pkg_download_path(cache_dir, pkg_desc):
+def _pkg_download_path(pkgs_dir, pkg_desc):
     download_path = os.path.join(
-        cache_dir, "download", pkg_desc["name"][0], pkg_desc["name"]
+        pkgs_dir, ".tmp/download", pkg_desc["name"][0], pkg_desc["name"]
     )
     if "platform" in pkg_desc:
         download_path = os.path.join(
@@ -57,9 +58,9 @@ def _pkg_download_path(cache_dir, pkg_desc):
     return download_path
 
 
-def _pkg_resource_path(cache_dir, pkg_desc):
+def _pkg_resource_path(pkgs_dir, pkg_desc):
     resouce_path = os.path.join(
-        cache_dir, "resource", pkg_desc["name"][0], pkg_desc["name"]
+        pkgs_dir, ".tmp/resource", pkg_desc["name"][0], pkg_desc["name"]
     )
     if "platform" in pkg_desc:
         resouce_path = os.path.join(
@@ -74,9 +75,9 @@ def _pkg_resource_path(cache_dir, pkg_desc):
     return resouce_path
 
 
-def _pkg_buildout_path(cache_dir, pkg_desc):
+def _pkg_buildout_path(pkgs_dir, pkg_desc):
     pkgbuild_path = os.path.join(
-        cache_dir, "buildout", pkg_desc["name"][0], pkg_desc["name"]
+        pkgs_dir, ".tmp/buildout", pkg_desc["name"][0], pkg_desc["name"]
     )
     if "platform" in pkg_desc:
         pkgbuild_path = os.path.join(
@@ -109,23 +110,23 @@ def _pkg_get_platform():
     return (plat_sys, plat_mach)
 
 
-def _pkg_from_json(package_dir, pkgname, version):
+def _pkg_from_json(pkgs_dir, pkgname, version):
     import json
 
     pkg_json = {}
     try:
         with open(
-            os.path.join(_pkg_package_path(package_dir, pkgname), "GNBPKG.json")
+            os.path.join(_pkg_package_path(pkgs_dir, pkgname), "GNBPKG.json")
         ) as f:
             pkg_json = json.load(f)
     except Exception:
-        utils.error(f"package `{pkgname}` is not exists")
+        utils.error(f"Package [{pkgname}] is not exists")
 
     if not "name" in pkg_json or pkgname != pkg_json["name"]:
-        utils.error(f"package `{pkgname}` is not match")
+        utils.error(f"Package [{pkgname}] is not match")
 
     if not "versions" in pkg_json or len(pkg_json["versions"]) == 0:
-        utils.error(f"package `{pkgname}` versions is not defined")
+        utils.error(f"Package [{pkgname}] versions is not defined")
 
     pkg_desc = {}
     ver_list = []
@@ -144,8 +145,8 @@ def _pkg_from_json(package_dir, pkgname, version):
                     break
 
     if not "version" in pkg_desc:
-        utils.debug(f"package `{pkgname}` version: {ver_list}")
-        utils.error(f"package `{pkgname}` version `{version}` is not exists")
+        utils.debug(f"Package [{pkgname}] version: {ver_list}")
+        utils.error(f"Version ({version}) is not exists")
 
     plat_sys, plat_mach = _pkg_get_platform()
     if ("type" in pkg_json) and (pkg_json["type"] in ["binary"]):
@@ -159,12 +160,12 @@ def _pkg_from_json(package_dir, pkgname, version):
                 )
             except:
                 utils.error(
-                    f"package `{pkgname}` url of `{pkg_desc["platform"]}` is not defined"
+                    f"Package [{pkgname}] url of `{pkg_desc["platform"]}` is not defined"
                 )
         elif type(pkg_desc["url"]) == str:
             pkg_desc["url"] = pkg_desc["url"].format(version=pkg_desc["version"])
         else:
-            utils.error(f"package `{pkgname}` url is invalid")
+            utils.error(f"Package [{pkgname}] url is invalid")
 
     if "dir" in pkg_desc:
         if type(pkg_desc["dir"]) == dict:
@@ -177,18 +178,40 @@ def _pkg_from_json(package_dir, pkgname, version):
         elif type(pkg_desc["dir"]) == str:
             pkg_desc["dir"] = pkg_desc["dir"].format(version=pkg_desc["version"])
         else:
-            utils.error(f"package `{pkgname}` dir is invalid")
+            utils.error(f"Package [{pkgname}] dir is invalid")
 
     pkg_desc["name"] = pkgname
 
     return (pkg_json, pkg_desc)
 
 
-def package_download(pkgname, version, package_dir, cache_dir, proxy):
-    _, pkg_desc = _pkg_from_json(package_dir, pkgname, version)
+def _pkg_build(args):
+    _, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
 
-    download_path = _pkg_download_path(cache_dir, pkg_desc)
-    resource_path = _pkg_resource_path(cache_dir, pkg_desc)
+    pkgdefine_dir = _pkg_package_path(args.pkgs_dir, pkg_desc["name"])
+    if not os.path.exists(os.path.join(pkgdefine_dir, "BUILD.gn")):
+        utils.error(f"Package [{pkg_desc["name"]}] BUILD.gn is not exists")
+
+    buildout_path = _pkg_buildout_path(args.pkgs_dir, pkg_desc)
+    build_profile = build.get_profile(args.repo_dir, pkgdefine_dir, "release")
+    build.build_action(
+        pkgdefine_dir,
+        build_profile,
+        buildout_path,
+        [f'{pkg_desc["name"]}_pkgver="{pkg_desc["version"]}"'],
+        args.repo_dir,
+        args.pkgs_dir,
+        args.proxy,
+        args.verbose,
+        args.target if ("target" in args) and (args.target != "") else "default",
+    )
+
+
+def package_download(pkgname, version, pkgs_dir, proxy):
+    _, pkg_desc = _pkg_from_json(pkgs_dir, pkgname, version)
+
+    download_path = _pkg_download_path(pkgs_dir, pkg_desc)
+    resource_path = _pkg_resource_path(pkgs_dir, pkg_desc)
 
     if not os.path.exists(resource_path):
         if pkg_desc["url"].endswith(".git"):
@@ -206,135 +229,134 @@ def package_download(pkgname, version, package_dir, cache_dir, proxy):
         # already downloaded
         pass
 
-    return os.path.abspath(os.path.join(resource_path, pkg_desc["dir"]))
-
-
-def _package_build(args):
-    _, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
-
-    pkgdefine_dir = _pkg_package_path(args.pkgs_dir, pkg_desc["name"])
-    if not os.path.exists(os.path.join(pkgdefine_dir, "BUILD.gn")):
-        utils.error(f"package `{pkg_desc["name"]}` BUILD.gn is not exists")
-
-    buildout_path = _pkg_buildout_path(args.cache_dir, pkg_desc)
-    build.build_action(
-        pkgdefine_dir,
-        os.path.join(args.repo_dir, "dotfiles", "release.gn"),
-        buildout_path,
-        [f'{pkg_desc["name"]}_pkgver="{pkg_desc["version"]}"'],
-        args.repo_dir,
-        args.pkgs_dir,
-        args.cache_dir,
-        args.proxy,
-        args.verbose,
+    return pkg_desc["version"], os.path.abspath(
+        os.path.join(resource_path, pkg_desc["dir"])
     )
 
 
+def _pkg_download(args):
+    pkg_ver, pkg_path = package_download(
+        args.pkgname, args.version, args.pkgs_dir, args.proxy
+    )
+
+    utils.info(f"Package [{args.pkgname}] download:")
+    utils.debug(f"[+] ({pkg_ver}) in {pkg_path}")
+
+
 """
-package `pkgname`
+Package [pkgname] clean / remove :
+[-] (<version>) [clean]
+[=] (<version>) [remove]
+[#] (<version>) [clean + remove]
 
-[+] <version0> (download)
-[*] <version1> (download + build)
-[-] <version2> (build)
-[ ] <version3> (in json)
+Package [pkgname] download:
+[+] (<version>) in <path>
+
+Package [pkgname] list:
+[*] (<version>) [download + build]
+[+] (<version>) [download]
+[-] (<version>) [build]
+[ ] (<version>) [descript]
 
 """
 
 
-def _package_json_list(pkg_json, cache_dir, clean=False, remove=False):
-    utils.info(f"package `{pkg_json["name"]}`:")
+def _pkg_pre_action(args):
+    pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
 
-    for ver_desc in pkg_json["versions"]:
-        ver_desc["name"] = pkg_json["name"]
-        resource_path = _pkg_resource_path(cache_dir, ver_desc)
-        buildout_path = _pkg_buildout_path(cache_dir, ver_desc)
+    if (not args.clean) and (not args.remove):
+        return
 
-        if os.path.exists(buildout_path) and clean:
+    if args.build or args.download or args.version != None:
+        buildout_path = _pkg_buildout_path(args.pkgs_dir, pkg_desc)
+        resource_path = _pkg_resource_path(args.pkgs_dir, pkg_desc)
+
+        if os.path.exists(buildout_path) or os.path.exists(resource_path):
+            utils.info(f"Package [{pkg_json["name"]}] clean / remove:")
+        else:
+            utils.debug(f"Package [{pkg_json["name"]}] nothing exists:")
+            return
+
+        if args.clean and os.path.exists(buildout_path):
             shutil.rmtree(buildout_path)
-            utils.debug(f"[c] {ver_desc["version"]}")
+            utils.debug(f"[-] ({pkg_desc['version']}) buildout: {buildout_path}")
 
-        elif os.path.exists(resource_path) and remove:
+        if args.remove and os.path.exists(resource_path):
             shutil.rmtree(resource_path)
-            utils.debug(f"[r] {ver_desc["version"]}")
+            utils.debug(f"[=] ({pkg_desc['version']}) resource: {resource_path}")
 
-        elif os.path.exists(resource_path) and os.path.exists(buildout_path):
-            utils.debug(f"[*] {ver_desc["version"]}")
-        elif os.path.exists(resource_path):
-            utils.debug(f"[+] {ver_desc["version"]}")
+    elif (not args.build) and (not args.download):
+        utils.info(f"Package [{pkg_json["name"]}] clean / remove:")
+
+        nums = 0
+        for ver_desc in pkg_json["versions"]:
+            ver_desc["name"] = pkg_json["name"]
+            buildout_path = _pkg_buildout_path(args.pkgs_dir, ver_desc)
+            resource_path = _pkg_resource_path(args.pkgs_dir, ver_desc)
+
+            if (args.clean and os.path.exists(buildout_path)) and (
+                args.remove and os.path.exists(resource_path)
+            ):
+                nums += 1
+                shutil.rmtree(buildout_path)
+                shutil.rmtree(resource_path)
+                utils.debug(f"[#] ({pkg_desc['version']})")
+
+            elif args.clean and os.path.exists(buildout_path):
+                nums += 1
+                shutil.rmtree(buildout_path)
+                utils.debug(f"[-] ({pkg_desc['version']}) buildout: {buildout_path}")
+
+            elif args.remove and os.path.exists(resource_path):
+                nums += 1
+                shutil.rmtree(resource_path)
+                utils.debug(f"[=] ({pkg_desc['version']}) resource: {resource_path}")
+
+        if nums == 0:
+            utils.debug(f"no version to clean / remove")
+
+
+def _pkg_list(args):
+    pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
+
+    utils.info(f"Package [{args.pkgname}] list:")
+
+    if args.version != None:
+        buildout_path = _pkg_buildout_path(args.pkgs_dir, pkg_desc)
+        resource_path = _pkg_resource_path(args.pkgs_dir, pkg_desc)
+        if os.path.exists(buildout_path) and os.path.exists(resource_path):
+            utils.debug(f"[*] ({pkg_desc['version']}) resource: {resource_path}")
         elif os.path.exists(buildout_path):
-            utils.debug(f"[-] {ver_desc["version"]}")
+            utils.debug(f"[-] ({pkg_desc['version']}) resource: {resource_path}")
+        elif os.path.exists(resource_path):
+            utils.debug(f"[+] ({pkg_desc['version']}) resource: {resource_path}")
         else:
-            utils.debug(f"[ ] {ver_desc["version"]}")
-
-
-def _package_desc_list(pkg_desc, cache_dir, clean=False, remove=False):
-    utils.info(f"package `{pkg_desc["name"]}`:")
-
-    resource_path = _pkg_resource_path(cache_dir, pkg_desc)
-    buildout_path = _pkg_buildout_path(cache_dir, pkg_desc)
-
-    if clean:
-        if os.path.exists(buildout_path):
-            shutil.rmtree(buildout_path)
-            utils.debug(f"[c] {pkg_desc["version"]} buildout: {buildout_path}")
-        else:
-            utils.error(f"package `{pkg_desc['name']}-{pkg_desc['version']}` buildout is not exists")
-
-    elif remove:
-        if os.path.exists(resource_path):
-            shutil.rmtree(resource_path)
-            utils.debug(f"[r] {pkg_desc["version"]} buildout: {resource_path}")
-        else:
-            utils.error(f"package `{pkg_desc["name"]}-{pkg_desc["version"]}` resource is not exists")
-
-    elif os.path.exists(resource_path) and os.path.exists(buildout_path):
-        utils.debug(f"[*] {pkg_desc["version"]} resource: {resource_path}")
-    elif os.path.exists(resource_path):
-        utils.debug(f"[+] {pkg_desc["version"]} resource: {resource_path}")
-    elif os.path.exists(buildout_path):
-        utils.debug(f"[-] {pkg_desc["version"]} buildout: {buildout_path}")
+            utils.debug(f"[ ] ({pkg_desc['version']})")
     else:
-        utils.debug(f"[ ] {pkg_desc["version"]}")
+        for ver_desc in pkg_json["versions"]:
+            ver_desc["name"] = pkg_json["name"]
+            buildout_path = _pkg_buildout_path(args.pkgs_dir, ver_desc)
+            resource_path = _pkg_resource_path(args.pkgs_dir, ver_desc)
+            if os.path.exists(buildout_path) and os.path.exists(resource_path):
+                utils.debug(f"[*] ({ver_desc['version']}) resource: {resource_path}")
+            elif os.path.exists(buildout_path):
+                utils.debug(f"[-] ({ver_desc['version']}) resource: {resource_path}")
+            elif os.path.exists(resource_path):
+                utils.debug(f"[+] ({ver_desc['version']}) resource: {resource_path}")
+            else:
+                utils.debug(f"[ ] ({ver_desc['version']})")
 
 
-def _package_clean(args):
-    pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
+def action(args):
+    if len(args.pkgname.split(":")) == 2:
+        args.pkgname, args.target = args.pkgname.split(":")
+    elif len(args.pkgname.split(":")) > 2:
+        utils.error(f"Package [{args.pkgname}] is invalid")
 
-    if args.version == None:
-        _package_json_list(pkg_json, args.cache_dir, True, False)
-    else:
-        _package_desc_list(pkg_desc, args.cache_dir, True, False)
-
-
-def _package_remove(args):
-    pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
-
-    if args.version == None:
-        _package_json_list(pkg_json, args.cache_dir, False, True)
-    else:
-        _package_desc_list(pkg_desc, args.cache_dir, False, True)
-
-
-def _package_list(args):
-    pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
-
-    if args.version == None:
-        _package_json_list(pkg_json, args.cache_dir, False, False)
-    else:
-        _package_desc_list(pkg_desc, args.cache_dir, False, False)
-
-
-def module(args):
-    if args.list:
-        _package_list(args)
+    _pkg_pre_action(args)
+    if args.download:
+        _pkg_download(args)
     elif args.build:
-        _package_build(args)
-    elif args.clean:
-        _package_clean(args)
-    elif args.remove:
-        _package_remove(args)
+        _pkg_build(args)
     else:
-        pkg_download_path = package_download(
-            args.pkgname, args.version, args.pkgs_dir, args.cache_dir, args.proxy
-        )
-        sys.stdout.write(pkg_download_path)
+        _pkg_list(args)
