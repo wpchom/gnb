@@ -17,7 +17,7 @@ def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
 
     curl_command = [
         curl_bin,
-        "-OJsL",
+        "-OsL",
         "--max-time",
         str(timeout),
         "--write-out",
@@ -32,7 +32,7 @@ def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
     if cont:
         curl_command += ["-C", "-"]
     else:
-        pass
+        curl_command += ["-J"]
 
     ret = subprocess.run(
         curl_command + ["--parallel", url], cwd=dir, check=False, capture_output=True
@@ -41,49 +41,63 @@ def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
         ret = subprocess.run(
             curl_command + [url], cwd=dir, check=False, capture_output=True
         )
-    if ret.returncode != 0:
-        utils.error(f"Download `{url}` failed")
 
-    return ret.returncode, ret.stdout.decode().strip()
+    return ret
 
 
-def download_from_url(url, download_path, proxy, timeout=30):
+def download_file_exists(download_path):
     download_dir = os.path.dirname(download_path)
     download_name = os.path.basename(download_path)
 
     if os.path.exists(download_dir):
         for f in os.listdir(download_dir):
             if f.startswith(download_name + "."):
-                return os.path.join(download_dir, f)
-    else:
-        os.makedirs(download_dir, exist_ok=True)
+                return download_dir, f
 
+    return download_dir, None
+
+
+def download_from_url(url, download_path, proxy, remove=False, timeout=30):
+    download_dir, download_name = download_file_exists(download_path)
+
+    if download_name != None:
+        if remove:
+            shutil.rmtree(os.path.join(download_dir, download_name))
+        else:
+            return os.path.join(download_dir, download_name)
+
+    os.makedirs(download_dir, exist_ok=True)
     download_tmp = os.path.join(download_dir, f"_{download_name}.tmp")
+
+    if remove and os.path.exists(download_tmp):
+        shutil.rmtree(download_tmp)
 
     if not os.path.exists(download_tmp):
         os.makedirs(download_tmp, exist_ok=True)
-        ret, download_file = _download_by_curl(url, download_tmp, proxy, False, timeout)
+        ret = _download_by_curl(url, download_tmp, proxy, False, timeout)
     else:
-        ret, download_file = _download_by_curl(url, download_tmp, proxy, True, timeout)
+        ret = _download_by_curl(url, download_tmp, proxy, True, timeout)
 
-    if (ret != 0) or (download_file == None):
+    try:
+        download_file = ret.stdout.decode().strip()
+        if download_file.split(".")[-2] in ["tar"]:
+            download_name = f"{download_name}.{download_file.split('.')[-2]}.{download_file.split('.')[-1]}"
+        else:
+            download_name = f"{download_name}.{download_file.split('.')[-1]}"
+
+        shutil.move(
+            os.path.join(download_tmp, download_file),
+            os.path.join(download_dir, download_name),
+        )
+
+        if os.path.exists(download_tmp):
+            shutil.rmtree(download_tmp)
+
+        return os.path.join(download_dir, download_name)
+
+    except:
         shutil.rmtree(download_tmp)
-        utils.error(f"Download `{url}` failed")
-
-    if download_file.split(".")[-2] in ["tar"]:
-        download_name = f"{download_name}.{download_file.split('.')[-2]}.{download_file.split('.')[-1]}"
-    else:
-        download_name = f"{download_name}.{download_file.split('.')[-1]}"
-
-    shutil.move(
-        os.path.join(download_tmp, download_file),
-        os.path.join(download_dir, download_name),
-    )
-
-    if os.path.exists(download_tmp):
-        shutil.rmtree(download_tmp)
-
-    return os.path.join(download_dir, download_name)
+        utils.error(f"Download `{url}` error: {ret.stderr.decode().strip()}")
 
 
 def download_from_git(url, branch, path, proxy):

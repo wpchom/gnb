@@ -19,20 +19,26 @@ template("gcc_toolchain") {
       prefix = ""
     }
 
-    if (defined(invoker.bindir)) {
-      asm = rebase_path("${prefix}gcc", "", invoker.bindir)
-      cc = rebase_path("${prefix}gcc", "", invoker.bindir)
-      cxx = rebase_path("${prefix}g++", "", invoker.bindir)
-      alink = rebase_path("${prefix}ar", "", invoker.bindir)
-      solink = rebase_path("${prefix}g++", "", invoker.bindir)
-      link = rebase_path("${prefix}g++", "", invoker.bindir)
+    if (host_os == "win") {
+      bin_ext = ".exe"
     } else {
-      asm = "${prefix}gcc"
-      cc = "${prefix}gcc"
-      cxx = "${prefix}g++"
-      alink = "${prefix}ar"
-      solink = "${prefix}g++"
-      link = "${prefix}g++"
+      bin_ext = ""
+    }
+
+    if (defined(invoker.bindir)) {
+      asm = rebase_path("${prefix}gcc${bin_ext}", "", invoker.bindir)
+      cc = rebase_path("${prefix}gcc${bin_ext}", "", invoker.bindir)
+      cxx = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+      alink = rebase_path("${prefix}ar${bin_ext}", "", invoker.bindir)
+      solink = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+      link = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+    } else {
+      asm = "${prefix}gcc${bin_ext}"
+      cc = "${prefix}gcc${bin_ext}"
+      cxx = "${prefix}g++${bin_ext}"
+      alink = "${prefix}ar${bin_ext}"
+      solink = "${prefix}g++${bin_ext}"
+      link = "${prefix}g++${bin_ext}"
     }
 
     if (defined(invoker.asmflags)) {

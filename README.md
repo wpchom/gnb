@@ -37,7 +37,6 @@ gnb package <pkgname> [-v=version]
 ```
 参数说明：
 - `<pkgname>` 包名，必填项。
-- `-t, --version` 版本。
 - `-c, --clean` 清除包，默认值为False
 - `-r, --remove` 删除包，默认值为False
 

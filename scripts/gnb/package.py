@@ -11,7 +11,6 @@ sys.dont_write_bytecode = True
 
 def _parser_arguments(parser):
     parser.add_argument("pkgname", metavar="PKGNAME", type=str, help="package name")
-    parser.add_argument("-t", "--version", default=None, help="tag or version")
 
     parser.add_argument(
         "-c", "--clean", action="store_true", default=False, help="clean package"
@@ -29,6 +28,16 @@ def _parser_arguments(parser):
     )
     group.add_argument(
         "-l", "--list", action="store_true", default=True, help="list package"
+    )
+
+    parser.add_argument(
+        "-t", "--target", default=None, help="additional build target, with --build"
+    )
+    parser.add_argument(
+        "--args",
+        action="append",
+        default=[],
+        help="additional build arguments, with --build",
     )
 
 
@@ -65,12 +74,10 @@ def _pkg_resource_path(pkgs_dir, pkg_desc):
     if "platform" in pkg_desc:
         resouce_path = os.path.join(
             resouce_path,
-            f"{pkg_desc["name"]}_{pkg_desc["platform"]}-{pkg_desc["version"]}",
+            f"{pkg_desc["platform"]}-{pkg_desc["version"]}",
         )
     else:
-        resouce_path = os.path.join(
-            resouce_path, f"{pkg_desc["name"]}-{pkg_desc["version"]}"
-        )
+        resouce_path = os.path.join(resouce_path, f"{pkg_desc["version"]}")
 
     return resouce_path
 
@@ -103,7 +110,7 @@ def _pkg_get_platform():
     if plat_sys in ["aarch64", "arm64"]:
         plat_mach = "arm64"
     elif plat_mach in ["x86_64", "amd64"]:
-        plat_mach = "x64"
+        plat_mach = "x86_64"
     elif plat_mach in ["i386", "i686"]:
         plat_mach = "x86"
 
@@ -194,11 +201,14 @@ def _pkg_build(args):
 
     buildout_path = _pkg_buildout_path(args.pkgs_dir, pkg_desc)
     build_profile = build.get_profile(args.repo_dir, pkgdefine_dir, "release")
+
+    build_args = [f'{pkg_desc["name"]}_pkgver="{pkg_desc["version"]}"'] + args.args
+
     build.build_action(
         pkgdefine_dir,
         build_profile,
         buildout_path,
-        [f'{pkg_desc["name"]}_pkgver="{pkg_desc["version"]}"'],
+        build_args,
         args.repo_dir,
         args.pkgs_dir,
         args.proxy,
@@ -207,7 +217,7 @@ def _pkg_build(args):
     )
 
 
-def package_download(pkgname, version, pkgs_dir, proxy):
+def package_download(pkgname, version, pkgs_dir, proxy=None, remove=False):
     _, pkg_desc = _pkg_from_json(pkgs_dir, pkgname, version)
 
     download_path = _pkg_download_path(pkgs_dir, pkg_desc)
@@ -222,7 +232,7 @@ def package_download(pkgname, version, pkgs_dir, proxy):
             os.rename(download_git, resource_path)
         else:
             download_pkg = download.download_from_url(
-                pkg_desc["url"], download_path, proxy
+                pkg_desc["url"], download_path, proxy, remove
             )
             compress.decompress(download_pkg, resource_path, False)
     else:
@@ -236,7 +246,7 @@ def package_download(pkgname, version, pkgs_dir, proxy):
 
 def _pkg_download(args):
     pkg_ver, pkg_path = package_download(
-        args.pkgname, args.version, args.pkgs_dir, args.proxy
+        args.pkgname, args.version, args.pkgs_dir, args.proxy, args.remove
     )
 
     utils.info(f"Package [{args.pkgname}] download:")
@@ -274,16 +284,16 @@ def _pkg_pre_action(args):
         if os.path.exists(buildout_path) or os.path.exists(resource_path):
             utils.info(f"Package [{pkg_json["name"]}] clean / remove:")
         else:
-            utils.debug(f"Package [{pkg_json["name"]}] nothing exists:")
+            utils.info(f"Package [{pkg_json["name"]}] nothing exists.")
             return
 
         if args.clean and os.path.exists(buildout_path):
-            shutil.rmtree(buildout_path)
             utils.debug(f"[-] ({pkg_desc['version']}) buildout: {buildout_path}")
+            shutil.rmtree(buildout_path)
 
         if args.remove and os.path.exists(resource_path):
-            shutil.rmtree(resource_path)
             utils.debug(f"[=] ({pkg_desc['version']}) resource: {resource_path}")
+            shutil.rmtree(resource_path)
 
     elif (not args.build) and (not args.download):
         utils.info(f"Package [{pkg_json["name"]}] clean / remove:")
@@ -298,19 +308,19 @@ def _pkg_pre_action(args):
                 args.remove and os.path.exists(resource_path)
             ):
                 nums += 1
+                utils.debug(f"[#] ({pkg_desc['version']})")
                 shutil.rmtree(buildout_path)
                 shutil.rmtree(resource_path)
-                utils.debug(f"[#] ({pkg_desc['version']})")
 
             elif args.clean and os.path.exists(buildout_path):
                 nums += 1
-                shutil.rmtree(buildout_path)
                 utils.debug(f"[-] ({pkg_desc['version']}) buildout: {buildout_path}")
+                shutil.rmtree(buildout_path)
 
             elif args.remove and os.path.exists(resource_path):
                 nums += 1
-                shutil.rmtree(resource_path)
                 utils.debug(f"[=] ({pkg_desc['version']}) resource: {resource_path}")
+                shutil.rmtree(resource_path)
 
         if nums == 0:
             utils.debug(f"no version to clean / remove")
@@ -348,10 +358,15 @@ def _pkg_list(args):
 
 
 def action(args):
-    if len(args.pkgname.split(":")) == 2:
-        args.pkgname, args.target = args.pkgname.split(":")
-    elif len(args.pkgname.split(":")) > 2:
-        utils.error(f"Package [{args.pkgname}] is invalid")
+    if ":" in args.pkgname:
+        _pkgname = args.pkgname.split(":")[0]
+        args.version = args.pkgname[len(_pkgname) + 1 :]
+        args.pkgname = _pkgname
+    else:
+        args.version = "latest"
+
+    if not args.build and (args.target or args.args):
+        utils.error("--target and --args can only be used with --build")
 
     _pkg_pre_action(args)
     if args.download:

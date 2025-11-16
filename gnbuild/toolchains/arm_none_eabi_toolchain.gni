@@ -1,0 +1,30 @@
+declare_args() {
+  arm_none_eabi_gcc_pkgver = "latest"
+}
+
+declare_args() {
+  arm_none_eabi_gcc_pkgdir =
+      exec_script(gnb_pkg_load,
+                  [
+                    "--download",
+                    "arm_none_eabi_gcc:${arm_none_eabi_gcc_pkgver}",
+                    "--pkgsrc",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+}
+
+import("${gnb_repo_dir}/gnbuild/toolchains/gcc_toolchain.gni")
+template("arm_none_eabi_toolchain") {
+  gcc_toolchain(target_name) {
+    forward_variables_from(invoker, [])
+    bindir = "${arm_none_eabi_gcc_pkgdir}/bin"
+    prefix = "arm-none-eabi-"
+    asmflags = profile_asmflags
+    cflags = profile_cflags
+    cflags_c = profile_cflags_c
+    cflags_cc = profile_cflags_cc
+    arflags = profile_arflags
+    ldflags = profile_ldflags
+  }
+}

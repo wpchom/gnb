@@ -1,0 +1,25 @@
+{
+    "name": "arm_none_eabi_gcc",
+    "type": "binary",
+    "versions": [
+        {
+            "version": "14.3.rel1",
+            "url": {
+                "windwos_x86": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-mingw-w64-i686-arm-none-eabi.zip",
+                "windows_x86_64": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-mingw-w64-x86_64-arm-none-eabi.zip",
+                "linux_x86_64": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-x86_64-arm-none-eabi.tar.xz",
+                "linux_arm64": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-aarch64-arm-none-eabi.tar.xz",
+                "macos_x86_64": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-x86_64-arm-none-eabi.tar.xz",
+                "macos_arm64": "https://developer.arm.com/-/media/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-arm64-arm-none-eabi.tar.xz"
+            },
+            "dir": {
+                "windows_x86": "arm-gnu-toolchain-{version}-mingw-w64-i686-arm-none-eabi",
+                "windows_x86_64": "arm-gnu-toolchain-{version}-mingw-w64-x86_64-arm-none-eabi",
+                "linux_x86_64": "arm-gnu-toolchain-{version}-x86_64-arm-none-eabi",
+                "linux_arm64": "arm-gnu-toolchain-{version}-aarch64-arm-none-eabi",
+                "macos_x86_64": "arm-gnu-toolchain-{version}-darwin-x86_64-arm-none-eabi",
+                "macos_arm64": "arm-gnu-toolchain-{version}-darwin-arm64-arm-none-eabi"
+            }
+        }
+    ]
+}

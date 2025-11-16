@@ -2,16 +2,15 @@ declare_args() {
   mbedtls_pkgver = "latest"
 
   # config
-  mbedtls_confile = ""
+  mbedtls_config_file = ""
+  tf_psa_crypto_config_file = ""
 }
 
 declare_args() {
   mbedtls_pkgdir = exec_script(gnb_pkg_load,
                                [
                                  "--download",
-                                 "mbedtls",
-                                 "--version",
-                                 mbedtls_pkgver,
+                                 "mbedtls:${mbedtls_pkgver}",
                                  "--pkgsrc",
                                  gnb_pkgs_dir,
                                ],
@@ -25,11 +24,15 @@ declare_args() {
 declare_toolchain(profile_toolchain) {
 }
 
-config("tf_psa_crypto_config") {
+config("tf_psa_crypto_cfg") {
   include_dirs = [
     "${tf_psa_crypto_pkgdir}/include",
     "${tf_psa_crypto_pkgdir}/drivers/builtin/include",
   ]
+
+  if (defined(tf_psa_crypto_config_file) && tf_psa_crypto_config_file != "") {
+    defines = [ "TF_PSA_CRYPTO_CONFIG_FILE=\"${tf_psa_crypto_config_file}\"" ]
+  }
 }
 
 source_set("tf_psa_crypto_builtin") {
@@ -127,14 +130,14 @@ static_library("tf_psa_crypto") {
 
   deps = [ ":tf_psa_crypto_builtin" ]
 
-  public_configs = [ ":tf_psa_crypto_config" ]
+  public_configs = [ ":tf_psa_crypto_cfg" ]
 }
 
-config("mbedtls_config") {
+config("mbedtls_cfg") {
   include_dirs = [ "${mbedtls_pkgdir}/include" ]
 
-  if (defined(mbedtls_confile) && mbedtls_confile != "") {
-    defines = [ "MBEDTLS_CONFIG_FILE=\"${mbedtls_confile}\"" ]
+  if (defined(mbedtls_config_file) && mbedtls_config_file != "") {
+    defines = [ "MBEDTLS_CONFIG_FILE=\"${mbedtls_config_file}\"" ]
   }
 }
 
@@ -162,7 +165,7 @@ static_library("mbedx509") {
 
   public_deps = [ ":tf_psa_crypto" ]
 
-  public_configs = [ ":mbedtls_config" ]
+  public_configs = [ ":mbedtls_cfg" ]
 }
 
 static_library("mbedtls") {
@@ -195,8 +198,6 @@ static_library("mbedtls") {
     "${tf_psa_crypto_pkgdir}/core",
     "${tf_psa_crypto_pkgdir}/drivers/builtin/src",
   ]
-
-  public_configs = [ ":mbedtls_config" ]
 
   public_deps = [ ":mbedx509" ]
 }

@@ -23,11 +23,15 @@ def main():
     parser.add_argument(
         "-d", "--download", action="store_true", default=False, help="download package"
     )
-    parser.add_argument(
-        "-t", "--version", type=str, default="latest", help="package version"
-    )
 
     args = parser.parse_args()
+
+    if ":" in args.pkgname:
+        _pkgname = args.pkgname.split(":")[0]
+        args.version = args.pkgname[len(_pkgname) + 1 :]
+        args.pkgname = _pkgname
+    else:
+        args.version = "latest"
 
     if args.download:
         from gnb import package

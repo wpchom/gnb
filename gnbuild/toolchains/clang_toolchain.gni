@@ -19,20 +19,26 @@ template("clang_toolchain") {
       prefix = ""
     }
 
-    if (defined(invoker.bindir)) {
-      asm = rebase_path("${prefix}clang", "", invoker.bindir)
-      cc = rebase_path("${prefix}clang", "", invoker.bindir)
-      cxx = rebase_path("${prefix}clang++", "", invoker.bindir)
-      alink = rebase_path("${prefix}llvm-ar", "", invoker.bindir)
-      solink = rebase_path("${prefix}clang++", "", invoker.bindir)
-      link = rebase_path("${prefix}clang++", "", invoker.bindir)
+    if (host_os == "win") {
+      bin_ext = ".exe"
     } else {
-      asm = "${prefix}clang"
-      cc = "${prefix}clang"
-      cxx = "${prefix}clang++"
-      alink = "${prefix}llvm-ar"
-      solink = "${prefix}clang++"
-      link = "${prefix}clang++"
+      bin_ext = ""
+    }
+
+    if (defined(invoker.bindir)) {
+      asm = rebase_path("${prefix}clang${bin_ext}", "", invoker.bindir)
+      cc = rebase_path("${prefix}clang${bin_ext}", "", invoker.bindir)
+      cxx = rebase_path("${prefix}clang++${bin_ext}", "", invoker.bindir)
+      alink = rebase_path("${prefix}llvm-ar${bin_ext}", "", invoker.bindir)
+      solink = rebase_path("${prefix}clang++${bin_ext}", "", invoker.bindir)
+      link = rebase_path("${prefix}clang++${bin_ext}", "", invoker.bindir)
+    } else {
+      asm = "${prefix}clang${bin_ext}"
+      cc = "${prefix}clang${bin_ext}"
+      cxx = "${prefix}clang++${bin_ext}"
+      alink = "${prefix}llvm-ar${bin_ext}"
+      solink = "${prefix}clang++${bin_ext}"
+      link = "${prefix}clang++${bin_ext}"
     }
 
     if (defined(invoker.asmflags)) {

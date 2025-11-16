@@ -1,0 +1,25 @@
+declare_args() {
+  cmsis_pkgver = "latest"
+}
+
+declare_args() {
+  cmsis_pkgdir = exec_script(gnb_pkg_load,
+                             [
+                               "--download",
+                               "cmsis:${cmsis_pkgver}",
+                               "--pkgsrc",
+                               gnb_pkgs_dir,
+                             ],
+                             "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+config("cmsis_core") {
+  include_dirs = [ "${cmsis_pkgdir}/Core/Include" ]
+}
+
+group("default") {
+  public_configs = [ ":cmsis_core" ]
+}

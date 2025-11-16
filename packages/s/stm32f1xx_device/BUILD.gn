@@ -1,0 +1,49 @@
+declare_args() {
+  stm32f1xx_device_pkgver = "latest"
+
+  # config
+  stm32f1xx_device_devdef = ""
+}
+
+declare_args() {
+  stm32f1xx_device_pkgdir =
+      exec_script(gnb_pkg_load,
+                  [
+                    "--download",
+                    "stm32f1xx_device:${stm32f1xx_device_pkgver}",
+                    "--pkgsrc",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+pkggroup("cmsis") {
+  configs = [ ":cmsis_core" ]
+}
+
+config("stm32f1xx_device_cfg") {
+  cflags = [ "-mcpu=cortex-m3" ]
+
+  include_dirs = [ "${stm32f1xx_device_pkgdir}/Include" ]
+
+  if (defined(stm32f1xx_device_devdef) && stm32f1xx_device_devdef != "") {
+    defines = [ "${stm32f1xx_device_devdef}" ]
+  } else {
+    assert(false, "`stm32f1xx_device_devdef` must be set")
+  }
+}
+
+source_set("stm32f1xx_system") {
+  sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/system_stm32f1xx.c" ]
+
+  public_configs = [ ":stm32f1xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+group("default") {
+  public_deps = [ ":stm32f1xx_system" ]
+}
