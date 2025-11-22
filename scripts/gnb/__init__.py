@@ -3,10 +3,11 @@
 
 import os
 import sys
-import argparse
-from . import utils, build, clean, package
 
 sys.dont_write_bytecode = True
+
+import argparse
+from . import utils, build, clean, package
 
 
 def _parser():

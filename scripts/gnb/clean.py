@@ -3,16 +3,14 @@
 
 import os
 import sys
-import subprocess
-from . import utils
 
 sys.dont_write_bytecode = True
+
+from . import utils
 
 
 def _parser_arguments(parser):
     parser.add_argument("outdir", help="output dir to clean")
-
-    parser.add_argument("-v", "--verbose", action="store_true", default=False)
 
 
 def parser(subparsers):
@@ -21,10 +19,13 @@ def parser(subparsers):
 
 
 def action(args):
+    import subprocess
+
     if (not os.path.exists(args.outdir)) or (
         not "build.ninja" in os.listdir(args.outdir)
     ):
         utils.info(f"`{args.outdir}` is not a build out dir")
+        return
 
     ninja_bin = utils.check_ninja(args.pkgs_dir, args.proxy)
 

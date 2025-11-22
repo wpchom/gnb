@@ -186,7 +186,7 @@ template("gcc_toolchain") {
 
     tool("copy") {
       if (host_os == "win") {
-        command = "xcopy /-Y  {{source}} {{output}}"
+        command = "xcopy /Y  {{source}} {{output}}"
       } else {
         command = "cp -af {{source}} {{output}}"
       }

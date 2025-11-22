@@ -3,14 +3,13 @@
 
 import os
 import sys
-import argparse
-import importlib
-import pathlib
 
 sys.dont_write_bytecode = True
 
 
 def main():
+    import argparse
+
     gnb_repo_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
     parser = argparse.ArgumentParser(description="get gnb package path")

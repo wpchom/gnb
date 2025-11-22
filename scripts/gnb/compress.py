@@ -3,10 +3,11 @@
 
 import os
 import sys
-import shutil
-from . import utils
 
 sys.dont_write_bytecode = True
+
+import shutil
+from . import utils
 
 
 def _parser_arguments(parser):
@@ -45,41 +46,42 @@ def decompress(input_file, output_path, force):
     ):
         import tarfile
 
-        tarfile.open(input_file).extractall(output_path)
+        with tarfile.open(input_file) as tar:
+            tar.extractall(output_path)
         return
 
     elif input_file.split(".")[-1] in ["zip"]:
         import zipfile
 
-        zipfile.ZipFile(input_file).extractall(output_path)
+        with zipfile.ZipFile(input_file) as zip:
+            zip.extractall(output_path)
         return
-
     elif input_file.split(".")[-1] in ["rar"]:
         try:
             import rarfile
 
-            rarfile.RarFile(input_file).extractall(output_path)
+            with rarfile.RarFile(input_file) as rar:
+                rar.extractall(output_path)
             return
-
         except ImportError:
             pass
 
     try:
-        _decompress_archive(input, output_path)
+        _decompress_archive(input_file, output_path)
     except Exception as e:
         utils.error(f"No decompress method for format: `{input_file}` ({str(e)})")
 
 
-def _decompress_archive(input, output):
-    if not os.path.exists(output):
-        os.makedirs(output, exist_ok=True)
+def _decompress_archive(input_file, output_path):
+    if not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
 
     p7z = shutil.which("7z")
     if p7z != None:
         import subprocess
 
-        p7z_command = [p7z, "x", input, "-o", output]
-        ret = subprocess.run(p7z_command, cwd=output, check=True)
+        p7z_command = [p7z, "x", input_file, "-o" + output_path]
+        ret = subprocess.run(p7z_command, check=False)
         if ret.returncode != 0:
             utils.error("7z decompress failed")
 
@@ -87,9 +89,9 @@ def _decompress_archive(input, output):
         try:
             import libarchive
 
-            with libarchive.file_reader(input) as archive:
+            with libarchive.file_reader(input_file) as archive:
                 for entry in archive:
-                    target_path = os.path.join(output, entry.pathname)
+                    target_path = os.path.join(output_path, entry.pathname)
 
                     if entry.isdir:
                         os.makedirs(target_path, exist_ok=True)
@@ -103,9 +105,8 @@ def _decompress_archive(input, output):
             try:
                 import py7zr
 
-                py7z = py7zr.SevenZipFile(input, "r")
-                py7z.extractall(output)
-                py7z.close()
+                with py7zr.SevenZipFile(input_file, "r") as py7z:
+                    py7z.extractall(output_path)
 
             except ImportError:
                 utils.error("Please install `7z` or python module `libarchive`/`py7zr`")

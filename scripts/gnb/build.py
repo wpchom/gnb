@@ -3,11 +3,10 @@
 
 import os
 import sys
-import time
-import subprocess
-from . import utils, clean
 
 sys.dont_write_bytecode = True
+
+from . import utils, clean
 
 
 def _parser_arguments(parser):
@@ -20,7 +19,6 @@ def _parser_arguments(parser):
         "-o", "--outdir", default=None, help="build output directory for gn"
     )
 
-    parser.add_argument("-v", "--verbose", action="store_true", default=False)
     parser.add_argument(
         "-c",
         "--clean",
@@ -44,22 +42,25 @@ def parser(subparsers):
 
 
 def get_profile(repo_dir, builddir, profile, default="debug.gn"):
-    try:
-        if profile != None:
-            if os.path.exists(os.path.join(os.getcwd(), profile)):
-                return os.path.join(os.getcwd(), profile)
-            elif os.path.exists(os.path.join(builddir, profile)):
-                return os.path.join(builddir, profile)
+    if profile != None:
+        if os.path.exists(os.path.join(os.getcwd(), profile)):
+            return os.path.join(os.getcwd(), profile)
+        elif os.path.exists(os.path.join(builddir, profile)):
+            return os.path.join(builddir, profile)
+        else:
+            profile = os.path.join(repo_dir, "gnbuild", "profiles", profile)
+            if not profile.endswith(".gn"):
+                profile += ".gn"
+            if os.path.exists(profile):
+                return profile
             else:
-                profile = os.path.join(repo_dir, "gnbuild", "profiles", profile)
-                if not profile.endswith(".gn"):
-                    profile += ".gn"
-                if os.path.exists(profile):
-                    return profile
-                else:
-                    utils.error(f"({profile}) not exists")
-    except:
-        return os.path.join(repo_dir, "gnbuild", "profiles", default)
+                utils.error(f"({profile}) not exists")
+    else:
+        default_profile = os.path.join(repo_dir, "gnbuild", "profiles", default)
+        if os.path.exists(default_profile):
+            return default_profile
+        else:
+            utils.error(f"Default profile `{default_profile}` not exists. ")
 
 
 def action(args):
@@ -105,34 +106,41 @@ def build_action(
     verbose,
     target=None,
 ):
+    import time, subprocess
+
     stime = time.perf_counter()
     utils.info(f"Building action start `{builddir}` with `{profile}`")
 
+    buildout = os.path.join(outdir, os.path.splitext(os.path.basename(profile))[0])
+
     # gn gen
     gn_bin = utils.check_gn(pkgs_dir, proxy)
-    gn_command = [gn_bin, "gen", outdir, "--export-compile-commands"]
+    gn_command = [gn_bin, "gen", buildout, "--export-compile-commands"]
     gn_command += ["--root=%s" % builddir, "--dotfile=%s" % profile]
 
-    buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + buildargs if buildargs else []
+    buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + (buildargs if buildargs else [])
     gn_command += ["--args=%s" % " ".join(buildargs)]
 
     if verbose:
         utils.debug(" ".join(gn_command))
 
     # git ignore
-    os.makedirs(outdir, exist_ok=True)
-    with open(os.path.join(outdir, ".gitignore"), "w+") as f:
+    os.makedirs(buildout, exist_ok=True)
+    with open(os.path.join(buildout, ".gitignore"), "w+") as f:
         f.write("*\n")
 
     ret = subprocess.run(
-        gn_command, cwd=builddir, check=False, env={"GNB_REPO_DIR": repo_dir}
+        gn_command,
+        cwd=builddir,
+        check=False,
+        env={**os.environ, "GNB_REPO_DIR": repo_dir},
     )
     if ret.returncode != 0:
         utils.error(" ".join(gn_command))
 
     # ninja build
     ninja_bin = utils.check_ninja(pkgs_dir, proxy)
-    ninja_command = [ninja_bin, "-C", outdir]
+    ninja_command = [ninja_bin, "-C", buildout]
 
     if (target != None) and (target != ""):
         ninja_command += [target]
@@ -141,7 +149,7 @@ def build_action(
         ninja_command += ["-v"]
         utils.debug(" ".join(ninja_command))
 
-    ret = subprocess.run(ninja_command, cwd=outdir, check=False)
+    ret = subprocess.run(ninja_command, cwd=buildout, check=False)
 
     # complete
     etime = time.perf_counter()

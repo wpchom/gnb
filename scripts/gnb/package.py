@@ -3,10 +3,10 @@
 
 import os
 import sys
-import shutil
-from . import utils, download, compress, build
 
 sys.dont_write_bytecode = True
+
+from . import utils
 
 
 def _parser_arguments(parser):
@@ -107,7 +107,7 @@ def _pkg_get_platform():
 
     if plat_sys == "darwin":
         plat_sys = "macos"
-    if plat_sys in ["aarch64", "arm64"]:
+    if plat_mach in ["aarch64", "arm64"]:
         plat_mach = "arm64"
     elif plat_mach in ["x86_64", "amd64"]:
         plat_mach = "x86_64"
@@ -138,6 +138,7 @@ def _pkg_from_json(pkgs_dir, pkgname, version):
     pkg_desc = {}
     ver_list = []
     if (version == None) or (version == "latest"):
+        # if not match the version url/dir, use the last version
         pkg_desc = pkg_json["versions"][0]
     else:
         for ver_desc in pkg_json["versions"]:
@@ -193,6 +194,8 @@ def _pkg_from_json(pkgs_dir, pkgname, version):
 
 
 def _pkg_build(args):
+    from . import build
+
     _, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
 
     pkgdefine_dir = _pkg_package_path(args.pkgs_dir, pkg_desc["name"])
@@ -218,6 +221,8 @@ def _pkg_build(args):
 
 
 def package_download(pkgname, version, pkgs_dir, proxy=None, remove=False):
+    from . import download, compress
+
     _, pkg_desc = _pkg_from_json(pkgs_dir, pkgname, version)
 
     download_path = _pkg_download_path(pkgs_dir, pkg_desc)
@@ -272,6 +277,8 @@ Package [pkgname] list:
 
 
 def _pkg_pre_action(args):
+    import shutil
+
     pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
 
     if (not args.clean) and (not args.remove):

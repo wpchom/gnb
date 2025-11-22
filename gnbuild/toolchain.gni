@@ -1,7 +1,11 @@
 assert(defined(gnb_repo_dir))
 
 declare_args() {
-  profile_toolchain = "default"
+  if (host_os == "mac") {
+    profile_toolchain = "clang"
+  } else {
+    profile_toolchain = "gcc"
+  }
   profile_asmflags = []
   profile_cflags = []
   profile_cflags_c = []
@@ -15,7 +19,7 @@ set_default_toolchain("//:${profile_toolchain}")
 template("declare_toolchain") {
   not_needed(invoker, "*")
 
-  if (target_name == "gcc" || target_name == "default") {
+  if (target_name == "gcc") {
     import("${gnb_repo_dir}/gnbuild/toolchains/gcc_toolchain.gni")
     gcc_toolchain("${profile_toolchain}") {
       asmflags = profile_asmflags

@@ -3,11 +3,11 @@
 
 import os
 import sys
-import shutil
-import subprocess
-from . import utils
 
 sys.dont_write_bytecode = True
+
+import shutil, subprocess
+from . import utils
 
 
 def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
@@ -62,9 +62,11 @@ def download_from_url(url, download_path, proxy, remove=False, timeout=30):
 
     if download_name != None:
         if remove:
-            shutil.rmtree(os.path.join(download_dir, download_name))
+            os.remove(os.path.join(download_dir, download_name))
         else:
             return os.path.join(download_dir, download_name)
+    else:
+        download_name = os.path.basename(download_path)
 
     os.makedirs(download_dir, exist_ok=True)
     download_tmp = os.path.join(download_dir, f"_{download_name}.tmp")
@@ -125,19 +127,18 @@ def download_from_git(url, branch, path, proxy):
 
         except KeyboardInterrupt:
             try:
-                shutil.rmtree(path)
+                if os.path.exists(path):
+                    shutil.rmtree(path)
             except:
                 pass
             raise (KeyboardInterrupt)
 
     else:
         try:
-            git_command = [git_bin, "status"]
-            ret = subprocess.run(git_command, cwd=path, capture_output=True)
+            git_command = [git_bin, "status", "--porcelain"]
+            ret = subprocess.run(git_command, cwd=path, capture_output=True, text=True)
 
-            if b"Changes not staged for commit" in ret.stdout.strip() or (
-                b"Changes to be committed" in ret.stdout.strip()
-            ):
+            if ret.stdout.strip():
                 utils.error(f"git repository `{path}` has uncommitted changes")
 
             git_command = [git_bin, "fetch", "--all"]

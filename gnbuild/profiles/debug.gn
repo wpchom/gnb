@@ -4,8 +4,6 @@ script_executable = "python3"
 export_compile_commands = [ "*" ]
 
 default_args = {
-  profile_toolchain = "gcc"
-
   profile_asmflags = []
   profile_cflags = [
     "-g",

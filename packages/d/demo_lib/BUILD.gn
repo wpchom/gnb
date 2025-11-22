@@ -14,3 +14,7 @@ static_library("demo_lib") {
 
   public_configs = [ ":config_demo_lib" ]
 }
+
+group("default") {
+  public_deps = [ ":demo_lib" ]
+}

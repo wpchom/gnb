@@ -3,7 +3,6 @@
 
 import os
 import sys
-import shutil
 
 sys.dont_write_bytecode = True
 
@@ -12,6 +11,8 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 for arg in sys.argv[1:]:
+    import shutil
+
     w = shutil.which(arg)
     if w:
         sys.stdout.write(os.path.abspath(w))

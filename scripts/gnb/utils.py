@@ -3,13 +3,11 @@
 
 import os
 import sys
-import shutil
-import subprocess
-
-from . import package
 
 sys.dont_write_bytecode = True
 
+import shutil, platform
+from . import package
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
 
@@ -43,6 +41,11 @@ def check_gn(pkgs_dir, proxy):
 
     if gn_bin == None:
         _, gn_bin = package.package_download("gn", "latest", pkgs_dir, proxy)
+    if os.path.exists(gn_bin) and platform.system().lower() in ["linux", "darwin"]:
+        try:
+            os.chmod(gn_bin, 0o755)
+        except Exception:
+            pass
 
     return gn_bin
 
@@ -52,11 +55,18 @@ def check_ninja(pkgs_dir, proxy):
 
     if ninja_bin == None:
         _, ninja_bin = package.package_download("ninja", "latest", pkgs_dir, proxy)
+    if os.path.exists(ninja_bin) and platform.system().lower() in ["linux", "darwin"]:
+        try:
+            os.chmod(ninja_bin, 0o755)
+        except Exception:
+            pass
 
     return ninja_bin
 
 
 def update_self():
+    import subprocess
+
     if not ".git" in os.listdir(GNB_REPO_DIR):
         error(f"`{GNB_REPO_DIR}` is not a git repository")
 
