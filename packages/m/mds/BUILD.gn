@@ -1,0 +1,26 @@
+declare_args() {
+  mds_pkgver = "latest"
+  mds_pkgpth = ""
+}
+
+declare_args() {
+  if (mds_pkgpth == "") {
+    mds_pkgdir = exec_script(gnb_pkg_load,
+                             [
+                               "--download",
+                               "mds:${mds_pkgver}",
+                               "--pkgsrc",
+                               gnb_pkgs_dir,
+                             ],
+                             "string")
+  } else {
+    mds_pkgdir = mds_pkgpth
+  }
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+group("default") {
+  public_deps = [ "${mds_pkgdir}/:default" ]
+}

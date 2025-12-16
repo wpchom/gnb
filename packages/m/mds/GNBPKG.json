@@ -1,0 +1,10 @@
+{
+    "name": "mds",
+    "versions": [
+        {
+            "version": "develop",
+            "url": "https://github.com/wpchom/mds.git",
+            "dir": ""
+        }
+    ]
+}

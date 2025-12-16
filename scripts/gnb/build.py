@@ -14,7 +14,9 @@ def _parser_arguments(parser):
     parser.add_argument(
         "-b", "--builddir", default=None, help="build root directory for gn"
     )
-    parser.add_argument("-p", "--profile", default=None, help="build profile for gn")
+    parser.add_argument(
+        "-p", "--profile", default=None, help="build profile of project for gn"
+    )
     parser.add_argument(
         "-o", "--outdir", default=None, help="build output directory for gn"
     )
@@ -43,18 +45,19 @@ def parser(subparsers):
 
 def get_profile(repo_dir, builddir, profile, default="debug.gn"):
     if profile != None:
-        if os.path.exists(os.path.join(os.getcwd(), profile)):
-            return os.path.join(os.getcwd(), profile)
-        elif os.path.exists(os.path.join(builddir, profile)):
-            return os.path.join(builddir, profile)
-        else:
-            profile = os.path.join(repo_dir, "gnbuild", "profiles", profile)
-            if not profile.endswith(".gn"):
-                profile += ".gn"
-            if os.path.exists(profile):
-                return profile
-            else:
-                utils.error(f"({profile}) not exists")
+        gnpfile = os.path.join(builddir, "profiles", profile)
+        if not gnpfile.endswith(".gn"):
+            gnpfile += ".gn"
+        if os.path.exists(gnpfile):
+            return gnpfile
+
+        gnpfile = os.path.join(repo_dir, "gnbuild", "profiles", profile)
+        if not gnpfile.endswith(".gn"):
+            gnpfile += ".gn"
+        if os.path.exists(gnpfile):
+            return gnpfile
+
+        utils.error(f"({profile}) not exists")
     else:
         default_profile = os.path.join(repo_dir, "gnbuild", "profiles", default)
         if os.path.exists(default_profile):
@@ -74,13 +77,15 @@ def action(args):
     if ("outdir" in args) and (args.outdir != None):
         args.outdir = os.path.abspath(args.outdir)
     else:
-        args.outdir = os.path.join(os.getcwd(), "outdir")
+        args.outdir = os.path.join(
+            os.getcwd(), "outdir", os.path.splitext(os.path.basename(args.profile))[0]
+        )
 
     if not "args" in args:
         args.args = []
 
     if ("clean" in args) and args.clean:
-        clean.action(args)
+        clean.clean_action(args.outdir, args.pkgs_dir, args.proxy, args.verbose)
 
     build_action(
         args.builddir,
@@ -111,11 +116,9 @@ def build_action(
     stime = time.perf_counter()
     utils.info(f"Building action start `{builddir}` with `{profile}`")
 
-    buildout = os.path.join(outdir, os.path.splitext(os.path.basename(profile))[0])
-
     # gn gen
     gn_bin = utils.check_gn(pkgs_dir, proxy)
-    gn_command = [gn_bin, "gen", buildout, "--export-compile-commands"]
+    gn_command = [gn_bin, "gen", outdir, "--export-compile-commands"]
     gn_command += ["--root=%s" % builddir, "--dotfile=%s" % profile]
 
     buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + (buildargs if buildargs else [])
@@ -125,8 +128,8 @@ def build_action(
         utils.debug(" ".join(gn_command))
 
     # git ignore
-    os.makedirs(buildout, exist_ok=True)
-    with open(os.path.join(buildout, ".gitignore"), "w+") as f:
+    os.makedirs(outdir, exist_ok=True)
+    with open(os.path.join(outdir, ".gitignore"), "w+") as f:
         f.write("*\n")
 
     ret = subprocess.run(
@@ -140,7 +143,7 @@ def build_action(
 
     # ninja build
     ninja_bin = utils.check_ninja(pkgs_dir, proxy)
-    ninja_command = [ninja_bin, "-C", buildout]
+    ninja_command = [ninja_bin, "-C", outdir]
 
     if (target != None) and (target != ""):
         ninja_command += [target]
@@ -149,7 +152,7 @@ def build_action(
         ninja_command += ["-v"]
         utils.debug(" ".join(ninja_command))
 
-    ret = subprocess.run(ninja_command, cwd=buildout, check=False)
+    ret = subprocess.run(ninja_command, cwd=outdir, check=False)
 
     # complete
     etime = time.perf_counter()

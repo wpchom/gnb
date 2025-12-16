@@ -1,0 +1,40 @@
+declare_args() {
+  gd32h7xx_firmware_pkgver = "latest"
+
+  # config
+  gd32h7xx_firmware_devdef = ""
+}
+
+declare_args() {
+  gd32h7xx_firmware_pkgdir =
+      exec_script(gnb_pkg_load,
+                  [
+                    "--download",
+                    "gd32h7xx_firmware:${gd32h7xx_firmware_pkgver}",
+                    "--pkgsrc",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+pkggroup("cmsis") {
+  configs = [ ":cmsis_core" ]
+}
+
+config("gd32h7xx_firmware_cfg") {
+  include_dirs =
+      [ "${gd32h7xx_firmware_pkgdir}/GD32H7xx_standard_peripheral/Include" ]
+}
+
+source_set("gd32h7xx_firmware") {
+  public_configs = [ ":gd32h7xx_firmware_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+group("default") {
+  public_deps = [ ":gd32h7xx_firmware" ]
+}

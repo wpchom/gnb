@@ -15,6 +15,7 @@ declare_args() {
 }
 
 import("${gnb_repo_dir}/gnbuild/toolchains/gcc_toolchain.gni")
+
 template("arm_none_eabi_toolchain") {
   gcc_toolchain(target_name) {
     forward_variables_from(invoker, [])
@@ -26,5 +27,27 @@ template("arm_none_eabi_toolchain") {
     cflags_cc = profile_cflags_cc
     arflags = profile_arflags
     ldflags = profile_ldflags
+  }
+}
+
+template("arm_none_eabi_action") {
+  action(target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "script",
+                             "args",
+                           ])
+
+    script = gnb_exec
+    args = []
+
+    args += [ rebase_path("arm-none-eabi-" + invoker.script,
+                          "",
+                          "${arm_none_eabi_gcc_pkgdir}/bin") ]
+
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
   }
 }

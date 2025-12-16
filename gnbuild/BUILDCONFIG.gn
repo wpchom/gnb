@@ -3,12 +3,12 @@ declare_args() {
 }
 
 declare_args() {
-  gnb_run = rebase_path("${gnb_repo_dir}/scripts/run.py")
+  gnb_exec = rebase_path("${gnb_repo_dir}/scripts/exec.py")
   gnb_which = rebase_path("${gnb_repo_dir}/scripts/which.py")
 }
 
-# toolchain
-import("${gnb_repo_dir}/gnbuild/toolchain.gni")
-
 # package
 import("${gnb_repo_dir}/gnbuild/package.gni")
+
+# toolchain
+import("${gnb_repo_dir}/gnbuild/toolchain.gni")

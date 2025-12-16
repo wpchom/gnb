@@ -15,7 +15,9 @@ def _parser_arguments(parser):
     group.add_argument("-c", "--compress", action="store_true", help="compress")
     group.add_argument("-d", "--decompress", action="store_true", help="decompress")
 
-    parser.add_argument("-f", "--format", default=None, help="compress format")
+    parser.add_argument(
+        "-f", "--force", action="store_true", default=False, help="force"
+    )
     parser.add_argument("inpath", help="input path")
     parser.add_argument("outpath", help="output path")
 
@@ -28,7 +30,7 @@ def parser(subparsers):
 
 
 def compress(input_path, output_file, force):
-    pass
+    utils.error("Compress not implemented")
 
 
 def decompress(input_file, output_path, force):
@@ -81,7 +83,7 @@ def _decompress_archive(input_file, output_path):
         import subprocess
 
         p7z_command = [p7z, "x", input_file, "-o" + output_path]
-        ret = subprocess.run(p7z_command, check=False)
+        ret = subprocess.run(p7z_command, capture_output=True, check=False)
         if ret.returncode != 0:
             utils.error("7z decompress failed")
 
@@ -110,3 +112,10 @@ def _decompress_archive(input_file, output_path):
 
             except ImportError:
                 utils.error("Please install `7z` or python module `libarchive`/`py7zr`")
+
+
+def action(args):
+    if args.decompress:
+        decompress(args.inpath, args.outpath, args.force)
+    elif args.compress:
+        compress(args.inpath, args.outpath, args.force)

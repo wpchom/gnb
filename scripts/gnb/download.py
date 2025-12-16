@@ -7,7 +7,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import shutil, subprocess
-from . import utils
+from . import utils, compress
 
 
 def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
@@ -57,19 +57,27 @@ def download_file_exists(download_path):
     return download_dir, None
 
 
+def _download_file_is_archive(filename):
+    name_split = filename.split(".")
+    if name_split[-2] in ["tar"]:
+        return filename[: -(len(name_split[-2]) + len(name_split[-1]) + 2)]
+    elif name_split[-1] in ["tgz", "tbz2", "txz", "rar", "zip", "7z"]:
+        return filename[: -(len(name_split[-1]) + 1)]
+    else:
+        return None
+
+
 def download_from_url(url, download_path, proxy, remove=False, timeout=30):
     download_dir, download_name = download_file_exists(download_path)
 
     if download_name != None:
         if remove:
             os.remove(os.path.join(download_dir, download_name))
-        else:
+        elif _download_file_is_archive(download_name) != None:
             return os.path.join(download_dir, download_name)
-    else:
-        download_name = os.path.basename(download_path)
 
     os.makedirs(download_dir, exist_ok=True)
-    download_tmp = os.path.join(download_dir, f"_{download_name}.tmp")
+    download_tmp = download_path + ".tmp"
 
     if remove and os.path.exists(download_tmp):
         shutil.rmtree(download_tmp)
@@ -82,6 +90,7 @@ def download_from_url(url, download_path, proxy, remove=False, timeout=30):
 
     try:
         download_file = ret.stdout.decode().strip()
+        download_name = os.path.basename(download_path)
         if download_file.split(".")[-2] in ["tar"]:
             download_name = f"{download_name}.{download_file.split('.')[-2]}.{download_file.split('.')[-1]}"
         else:
@@ -102,7 +111,32 @@ def download_from_url(url, download_path, proxy, remove=False, timeout=30):
         utils.error(f"Download `{url}` error: {ret.stderr.decode().strip()}")
 
 
-def download_from_git(url, branch, path, proxy):
+def _download_decompress_archive(input_dir, decomp_dir, depth=1):
+    if depth <= 0:
+        return
+
+    for fd in os.listdir(input_dir):
+        if os.path.isdir(os.path.join(input_dir, fd)):
+            _download_decompress_archive(
+                os.path.join(input_dir, fd), os.path.join(decomp_dir, fd), depth - 1
+            )
+        else:
+            filename = _download_file_is_archive(fd)
+            if filename != None:
+                compress.decompress(
+                    os.path.join(input_dir, fd),
+                    os.path.join(decomp_dir, filename),
+                    True,
+                )
+
+
+def download_to_decompress(download_pkg, resource_path):
+    compress.decompress(download_pkg, resource_path, True)
+
+    _download_decompress_archive(resource_path, resource_path, 3)
+
+
+def download_from_git(url, branch, path, proxy=None):
     git_bin = shutil.which("git")
     if git_bin == None:
         utils.error("`git` not found")

@@ -41,18 +41,22 @@ template("clang_toolchain") {
       link = "${prefix}clang++${bin_ext}"
     }
 
+    common_flags = [
+      "-fdiagnostics-color=always",
+      "-fmessage-length=0",
+      "-fno-common",
+    ]
+
     if (defined(invoker.asmflags)) {
-      toolchain_asmflags =
-          string_join(" ", [ "-fdiagnostics-color=always" ] + invoker.asmflags)
+      toolchain_asmflags = string_join(" ", common_flags + invoker.asmflags)
     } else {
-      toolchain_asmflags = "-fdiagnostics-color=always"
+      toolchain_asmflags = string_join(" ", common_flags)
     }
 
     if (defined(invoker.cflags)) {
-      toolchain_cflags =
-          string_join(" ", [ "-fdiagnostics-color=always" ] + invoker.cflags)
+      toolchain_cflags = string_join(" ", common_flags + invoker.cflags)
     } else {
-      toolchain_cflags = "-fdiagnostics-color=always"
+      toolchain_cflags = string_join(" ", common_flags)
     }
 
     if (defined(invoker.cflags_c)) {
@@ -71,9 +75,9 @@ template("clang_toolchain") {
       toolchain_arflags = ""
     }
     if (defined(invoker.ldflags)) {
-      toolchain_ldflags = string_join(" ", invoker.ldflags)
+      toolchain_ldflags = string_join(" ", common_flags + invoker.ldflags)
     } else {
-      toolchain_ldflags = ""
+      toolchain_ldflags = string_join(" ", common_flags)
     }
 
     lib_switch = "-l"
@@ -81,7 +85,7 @@ template("clang_toolchain") {
 
     whole_archive_flag = "-Wl,--whole-archive"
 
-    gcc_version = exec_script(gnb_run,
+    gcc_version = exec_script(gnb_exec,
                               [
                                 "${cc}",
                                 "--version",
@@ -97,7 +101,7 @@ template("clang_toolchain") {
       depfile = "{{output}}.d"
       depsformat = "gcc"
 
-      command = "${ccache} ${asm} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_asmflags} {{asmflags}} -c {{source}} -o {{output}}"
+      command = "${ccache} ${asm} -MMD -MF ${depfile} ${toolchain_asmflags} {{asmflags}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
       description = "AS {{output}}"
 
       outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
@@ -107,7 +111,7 @@ template("clang_toolchain") {
       depfile = "{{output}}.d"
       depsformat = "gcc"
 
-      command = "${ccache} ${cc} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_c} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "${ccache} ${cc} -MMD -MF ${depfile} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_c} {{cflags_c}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
       description = "CC {{output}}"
 
       outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
@@ -117,7 +121,7 @@ template("clang_toolchain") {
       depfile = "{{output}}.d"
       depsformat = "gcc"
 
-      command = "${ccache} ${cxx} -MMD -MF ${depfile} {{defines}} {{include_dirs}} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_cc} {{cflags_cc}} -c {{source}} -o {{output}}"
+      command = "${ccache} ${cxx} -MMD -MF ${depfile} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_cc} {{cflags_cc}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
       description = "CXX {{output}}"
 
       outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
@@ -205,7 +209,7 @@ template("clang_action") {
                              "args",
                            ])
 
-    script = gnb_run
+    script = gnb_exec
     args = []
 
     if (defined(invoker.bindir)) {

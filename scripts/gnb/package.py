@@ -6,6 +6,7 @@ import sys
 
 sys.dont_write_bytecode = True
 
+import shutil
 from . import utils
 
 
@@ -221,32 +222,38 @@ def _pkg_build(args):
 
 
 def package_download(pkgname, version, pkgs_dir, proxy=None, remove=False):
-    from . import download, compress
+    from . import download
 
     _, pkg_desc = _pkg_from_json(pkgs_dir, pkgname, version)
 
     download_path = _pkg_download_path(pkgs_dir, pkg_desc)
     resource_path = _pkg_resource_path(pkgs_dir, pkg_desc)
 
+    if remove and os.path.exists(resource_path):
+        shutil.rmtree(resource_path)
+
     if not os.path.exists(resource_path):
         if pkg_desc["url"].endswith(".git"):
-            download_git = download.download_from_git(
+            download.download_from_git(
                 pkg_desc["url"], pkg_desc["version"], download_path, proxy
             )
             os.makedirs(os.path.dirname(resource_path), exist_ok=True)
-            os.rename(download_git, resource_path)
+            os.rename(download_path, resource_path)
         else:
             download_pkg = download.download_from_url(
                 pkg_desc["url"], download_path, proxy, remove
             )
-            compress.decompress(download_pkg, resource_path, False)
+            download.download_to_decompress(download_pkg, resource_path)
     else:
         # already downloaded
         pass
 
-    return pkg_desc["version"], os.path.abspath(
-        os.path.join(resource_path, pkg_desc["dir"])
-    )
+    if "dir" in pkg_desc:
+        pkg_dir = os.path.abspath(os.path.join(resource_path, pkg_desc["dir"]))
+    else:
+        pkg_dir = resource_path
+
+    return pkg_desc["version"], pkg_dir
 
 
 def _pkg_download(args):
@@ -277,8 +284,6 @@ Package [pkgname] list:
 
 
 def _pkg_pre_action(args):
-    import shutil
-
     pkg_json, pkg_desc = _pkg_from_json(args.pkgs_dir, args.pkgname, args.version)
 
     if (not args.clean) and (not args.remove):

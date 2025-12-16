@@ -8,6 +8,8 @@ default_args = {
   profile_cflags = [
     "-g",
     "-Og",
+    "-Wall",
+    "-Wextra",
   ]
   profile_cflags_c = []
   profile_cflags_cc = []

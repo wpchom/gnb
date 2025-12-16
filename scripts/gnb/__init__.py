@@ -7,7 +7,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import argparse
-from . import utils, build, clean, package
+from . import utils, build, clean, package, compress
 
 
 def _parser():
@@ -22,6 +22,7 @@ def _parser():
     build.parser(subparsers)
     clean.parser(subparsers)
     package.parser(subparsers)
+    compress.parser(subparsers)
 
     parser.set_defaults(action="build")
 
@@ -31,12 +32,14 @@ def _parser():
 def _action(args):
     if (args.action == "update") or (args.action == "u"):
         utils.update_self()
-    if (args.action == "build") or (args.action == "b"):
+    elif (args.action == "build") or (args.action == "b"):
         build.action(args)
     elif (args.action == "clean") or (args.action == "c"):
         clean.action(args)
     elif (args.action == "package") or (args.action == "p"):
         package.action(args)
+    elif (args.action == "compress") or (args.action == "z"):
+        compress.action(args)
     else:
         utils.error(f'Unknown action "{args.action}"')
 

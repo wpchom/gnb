@@ -1,0 +1,87 @@
+declare_args() {
+  stm32h7xx_device_pkgver = "latest"
+
+  # config
+  stm32h7xx_device_devdef = ""
+}
+
+declare_args() {
+  stm32h7xx_device_pkgdir =
+      exec_script(gnb_pkg_load,
+                  [
+                    "--download",
+                    "stm32h7xx_device:${stm32h7xx_device_pkgver}",
+                    "--pkgsrc",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+pkggroup("cmsis") {
+  configs = [ ":cmsis_core" ]
+}
+
+config("stm32h7xx_device_cfg") {
+  include_dirs = [ "${stm32h7xx_device_pkgdir}/Include" ]
+
+  if (defined(stm32h7xx_device_devdef) && stm32h7xx_device_devdef != "") {
+    defines = [ "${stm32h7xx_device_devdef}" ]
+  } else {
+    assert(false, "`stm32h7xx_device_devdef` must be set")
+  }
+}
+
+source_set("stm32h7xx_system") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32h7xx_singlecore") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32h7xx_singlecore") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32h7xx_dualcore_boot_cm4_cm7") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32h7xx_dualcore_bootcm4_cm7gated") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32h7xx_dualcore_bootcm7_cm4gated") {
+  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}
+
+group("default") {
+  public_deps = [ ":stm32h7xx_system" ]
+}
