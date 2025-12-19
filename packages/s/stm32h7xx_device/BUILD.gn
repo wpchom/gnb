@@ -34,15 +34,7 @@ config("stm32h7xx_device_cfg") {
   }
 }
 
-source_set("stm32h7xx_system") {
-  sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
-
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
-}
-
-source_set("system_stm32h7xx_singlecore") {
+source_set("system_stm32h7xx") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
   public_configs = [ ":stm32h7xx_device_cfg" ]
@@ -83,5 +75,5 @@ source_set("system_stm32h7xx_dualcore_bootcm7_cm4gated") {
 }
 
 group("default") {
-  public_deps = [ ":stm32h7xx_system" ]
+  public_deps = [ ":system_stm32h7xx" ]
 }

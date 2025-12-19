@@ -5,14 +5,15 @@ declare_args() {
 
 declare_args() {
   if (drv_chip_stm32f1xx_pkgpth == "") {
-    drv_chip_stm32f1xx_pkgdir = exec_script(gnb_pkg_load,
-                             [
-                               "--download",
-                               "drv_chip_stm32f1xx:${drv_chip_stm32f1xx_pkgver}",
-                               "--pkgsrc",
-                               gnb_pkgs_dir,
-                             ],
-                             "string")
+    drv_chip_stm32f1xx_pkgdir =
+        exec_script(gnb_pkg_load,
+                    [
+                      "--download",
+                      "drv_chip_stm32f1xx:${drv_chip_stm32f1xx_pkgver}",
+                      "--pkgsrc",
+                      gnb_pkgs_dir,
+                    ],
+                    "string")
   } else {
     drv_chip_stm32f1xx_pkgdir = drv_chip_stm32f1xx_pkgpth
   }
@@ -22,5 +23,5 @@ declare_toolchain(profile_toolchain) {
 }
 
 group("default") {
-  public_deps = [ "${drv_chip_stm32f1xx_pkgdir}/:default" ]
+  public_deps = [ "${drv_chip_stm32f1xx_pkgdir}/:drv_chip_stm32f1xx" ]
 }

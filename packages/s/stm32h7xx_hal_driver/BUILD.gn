@@ -2,7 +2,7 @@ declare_args() {
   stm32h7xx_hal_driver_pkgver = "latest"
 
   # config
-  stm32h7xx_hal_driver_confdir = rebase_path("inc")
+  stm32h7xx_hal_driver_confdir = rebase_path("include")
 }
 
 declare_args() {

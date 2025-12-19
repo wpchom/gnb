@@ -34,8 +34,8 @@ config("stm32f1xx_device_cfg") {
   }
 }
 
-source_set("stm32f1xx_system") {
-  sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/system_stm32f1xx.c" ]
+source_set("system_stm32f1xx") {
+  sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
   public_configs = [ ":stm32f1xx_device_cfg" ]
 
@@ -43,5 +43,5 @@ source_set("stm32f1xx_system") {
 }
 
 group("default") {
-  public_deps = [ ":stm32f1xx_system" ]
+  public_deps = [ ":system_stm32f1xx" ]
 }

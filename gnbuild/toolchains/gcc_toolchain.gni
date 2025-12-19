@@ -208,8 +208,6 @@ template("gcc_action") {
                              "args",
                            ])
 
-    print(invoker)
-
     script = gnb_exec
     args = []
 
