@@ -1,3 +1,18 @@
+declare_args() {
+  profile_common_flags = [
+    "-fdiagnostics-color=always",
+    "-fmessage-length=0",
+    "-fno-common",
+  ]
+
+  profile_asmflags = []
+  profile_cflags = []
+  profile_cflags_c = []
+  profile_cflags_cc = []
+  profile_arflags = []
+  profile_ldflags = []
+}
+
 template("clang_toolchain") {
   not_needed(invoker, "*")
 
@@ -41,44 +56,41 @@ template("clang_toolchain") {
       link = "${prefix}clang++${bin_ext}"
     }
 
-    common_flags = [
-      "-fdiagnostics-color=always",
-      "-fmessage-length=0",
-      "-fno-common",
-    ]
-
+    toolchain_asmflags = profile_common_flags + profile_asmflags
     if (defined(invoker.asmflags)) {
-      toolchain_asmflags = string_join(" ", common_flags + invoker.asmflags)
-    } else {
-      toolchain_asmflags = string_join(" ", common_flags)
+      toolchain_asmflags += invoker.asmflags
     }
+    toolchain_asmflags = string_join(" ", toolchain_asmflags)
 
+    toolchain_cflags = profile_common_flags + profile_cflags
     if (defined(invoker.cflags)) {
-      toolchain_cflags = string_join(" ", common_flags + invoker.cflags)
-    } else {
-      toolchain_cflags = string_join(" ", common_flags)
+      toolchain_cflags += invoker.cflags
     }
+    toolchain_cflags = string_join(" ", toolchain_cflags)
 
+    toolchain_cflags_c = profile_cflags_c
     if (defined(invoker.cflags_c)) {
-      toolchain_cflags_c = string_join(" ", invoker.cflags_c)
-    } else {
-      toolchain_cflags_c = ""
+      toolchain_cflags_c += invoker.cflags_c
     }
+    toolchain_cflags_c = string_join(" ", toolchain_cflags_c)
+
+    toolchain_cflags_cc = profile_cflags_cc
     if (defined(invoker.cflags_cc)) {
-      toolchain_cflags_cc = string_join(" ", invoker.cflags_cc)
-    } else {
-      toolchain_cflags_cc = ""
+      toolchain_cflags_cc += invoker.cflags_cc
     }
+    toolchain_cflags_cc = string_join(" ", toolchain_cflags_cc)
+
+    toolchain_arflags = profile_arflags
     if (defined(invoker.arflags)) {
-      toolchain_arflags = string_join(" ", invoker.arflags)
-    } else {
-      toolchain_arflags = ""
+      toolchain_arflags += invoker.arflags
     }
+    toolchain_arflags = string_join(" ", toolchain_arflags)
+
+    toolchain_ldflags = profile_common_flags + profile_ldflags
     if (defined(invoker.ldflags)) {
-      toolchain_ldflags = string_join(" ", common_flags + invoker.ldflags)
-    } else {
-      toolchain_ldflags = string_join(" ", common_flags)
+      toolchain_ldflags += invoker.ldflags
     }
+    toolchain_ldflags = string_join(" ", toolchain_ldflags)
 
     lib_switch = "-l"
     lib_dir_switch = "-L"
@@ -176,7 +188,11 @@ template("clang_toolchain") {
 
       outputs = [ outfile ]
       default_output_dir = "{{root_out_dir}}"
-      default_output_extension = ".elf"
+      if (target_os == "win") {
+        default_output_extension = ".exe"
+      } else {
+        default_output_extension = ".elf"
+      }
     }
 
     tool("stamp") {

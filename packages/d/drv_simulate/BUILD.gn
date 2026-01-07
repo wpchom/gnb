@@ -1,0 +1,26 @@
+declare_args() {
+  drv_simulate_pkgver = "latest"
+  drv_simulate_pkgpth = ""
+}
+
+declare_args() {
+  if (drv_simulate_pkgpth == "") {
+    drv_simulate_pkgdir = exec_script(gnb_pkg_load,
+                                      [
+                                        "--download",
+                                        "drv_simulate:${drv_simulate_pkgver}",
+                                        "--pkgsrc",
+                                        gnb_pkgs_dir,
+                                      ],
+                                      "string")
+  } else {
+    drv_simulate_pkgdir = drv_simulate_pkgpth
+  }
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+group("default") {
+  public_deps = [ "${drv_simulate_pkgdir}/:drv_simulate" ]
+}

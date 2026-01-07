@@ -6,12 +6,6 @@ declare_args() {
   } else {
     profile_toolchain = "gcc"
   }
-  profile_asmflags = []
-  profile_cflags = []
-  profile_cflags_c = []
-  profile_cflags_cc = []
-  profile_arflags = []
-  profile_ldflags = []
 }
 
 set_default_toolchain("//:${profile_toolchain}")
@@ -21,12 +15,6 @@ if (profile_toolchain == "gcc") {
   template("declare_toolchain") {
     not_needed(invoker, "*")
     gcc_toolchain(target_name) {
-      asmflags = profile_asmflags
-      cflags = profile_cflags
-      cflags_c = profile_cflags_c
-      cflags_cc = profile_cflags_cc
-      arflags = profile_arflags
-      ldflags = profile_ldflags
     }
   }
 } else if (profile_toolchain == "clang") {
@@ -34,22 +22,15 @@ if (profile_toolchain == "gcc") {
   template("declare_toolchain") {
     not_needed(invoker, "*")
     clang_toolchain(target_name) {
-      asmflags = profile_asmflags
-      cflags = profile_cflags
-      cflags_c = profile_cflags_c
-      cflags_cc = profile_cflags_cc
-      arflags = profile_arflags
-      ldflags = profile_ldflags
-    }
-  }
-} else if (profile_toolchain == "arm_none_eabi_gcc") {
-  import("${gnb_repo_dir}/gnbuild/toolchains/arm_none_eabi_toolchain.gni")
-  template("declare_toolchain") {
-    not_needed(invoker, "*")
-    arm_none_eabi_toolchain(target_name) {
     }
   }
 } else {
-  # try import toolchain from packagess
-  assert(false, "unknown toolchain: " + profile_toolchain)
+  toolchain_path = exec_script(gnb_pkg_load,
+                               [
+                                 profile_toolchain,
+                                 "--pkgsrc",
+                                 gnb_pkgs_dir,
+                               ],
+                               "string")
+  import("${toolchain_path}/${profile_toolchain}.gni")
 }

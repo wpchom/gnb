@@ -1,0 +1,27 @@
+declare_args() {
+  drv_chip_gd32h7xx_pkgver = "latest"
+  drv_chip_gd32h7xx_pkgpth = ""
+}
+
+declare_args() {
+  if (drv_chip_gd32h7xx_pkgpth == "") {
+    drv_chip_gd32h7xx_pkgdir =
+        exec_script(gnb_pkg_load,
+                    [
+                      "--download",
+                      "drv_chip_gd32h7xx:${drv_chip_gd32h7xx_pkgver}",
+                      "--pkgsrc",
+                      gnb_pkgs_dir,
+                    ],
+                    "string")
+  } else {
+    drv_chip_gd32h7xx_pkgdir = drv_chip_gd32h7xx_pkgpth
+  }
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+group("default") {
+  public_deps = [ "${drv_chip_gd32h7xx_pkgdir}/:drv_chip_gd32h7xx" ]
+}

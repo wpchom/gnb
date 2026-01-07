@@ -59,7 +59,7 @@ def download_file_exists(download_path):
 
 def _download_file_is_archive(filename):
     name_split = filename.split(".")
-    if name_split[-2] in ["tar"]:
+    if (len(name_split) > 1) and (name_split[-2] in ["tar"]):
         return filename[: -(len(name_split[-2]) + len(name_split[-1]) + 2)]
     elif name_split[-1] in ["tgz", "tbz2", "txz", "rar", "zip", "7z"]:
         return filename[: -(len(name_split[-1]) + 1)]
@@ -87,6 +87,9 @@ def download_from_url(url, download_path, proxy, remove=False, timeout=30):
         ret = _download_by_curl(url, download_tmp, proxy, False, timeout)
     else:
         ret = _download_by_curl(url, download_tmp, proxy, True, timeout)
+
+    if ret.returncode != 0:
+        utils.error(f"Download `{url}` error: {ret.stderr.decode().strip()}")
 
     try:
         download_file = ret.stdout.decode().strip()

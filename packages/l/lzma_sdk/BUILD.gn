@@ -1,0 +1,92 @@
+declare_args() {
+  lzma_sdk_pkgver = "latest"
+  # config
+}
+
+declare_args() {
+  lzma_sdk_pkgdir = exec_script(gnb_pkg_load,
+                                [
+                                  "--download",
+                                  "lzma_sdk:${lzma_sdk_pkgver}",
+                                  "--pkgsrc",
+                                  gnb_pkgs_dir,
+                                ],
+                                "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+config("lzma_sdk_cfg") {
+  include_dirs = [ "${lzma_sdk_pkgdir}/C" ]
+}
+
+static_library("lzma_sdk") {
+  sources = [
+    "${lzma_sdk_pkgdir}/C/7zAlloc.c",
+    "${lzma_sdk_pkgdir}/C/7zArcIn.c",
+    "${lzma_sdk_pkgdir}/C/7zBuf.c",
+    "${lzma_sdk_pkgdir}/C/7zBuf2.c",
+    "${lzma_sdk_pkgdir}/C/7zCrc.c",
+    "${lzma_sdk_pkgdir}/C/7zCrcOpt.c",
+    "${lzma_sdk_pkgdir}/C/7zDec.c",
+    "${lzma_sdk_pkgdir}/C/7zFile.c",
+    "${lzma_sdk_pkgdir}/C/7zStream.c",
+    "${lzma_sdk_pkgdir}/C/Aes.c",
+    "${lzma_sdk_pkgdir}/C/AesOpt.c",
+    "${lzma_sdk_pkgdir}/C/Alloc.c",
+    "${lzma_sdk_pkgdir}/C/Bcj2.c",
+    "${lzma_sdk_pkgdir}/C/Bcj2Enc.c",
+    "${lzma_sdk_pkgdir}/C/Bra.c",
+    "${lzma_sdk_pkgdir}/C/Bra86.c",
+    "${lzma_sdk_pkgdir}/C/BraIA64.c",
+    "${lzma_sdk_pkgdir}/C/CpuArch.c",
+    "${lzma_sdk_pkgdir}/C/Delta.c",
+    "${lzma_sdk_pkgdir}/C/DllSecur.c",
+    "${lzma_sdk_pkgdir}/C/LzFind.c",
+    "${lzma_sdk_pkgdir}/C/LzFindMt.c",
+    "${lzma_sdk_pkgdir}/C/LzFindOpt.c",
+    "${lzma_sdk_pkgdir}/C/Lzma2Dec.c",
+    "${lzma_sdk_pkgdir}/C/Lzma2DecMt.c",
+    "${lzma_sdk_pkgdir}/C/Lzma2Enc.c",
+    "${lzma_sdk_pkgdir}/C/Lzma86Dec.c",
+    "${lzma_sdk_pkgdir}/C/Lzma86Enc.c",
+    "${lzma_sdk_pkgdir}/C/LzmaDec.c",
+    "${lzma_sdk_pkgdir}/C/LzmaEnc.c",
+    "${lzma_sdk_pkgdir}/C/LzmaLib.c",
+    "${lzma_sdk_pkgdir}/C/MtCoder.c",
+    "${lzma_sdk_pkgdir}/C/MtDec.c",
+    "${lzma_sdk_pkgdir}/C/Ppmd7.c",
+    "${lzma_sdk_pkgdir}/C/Ppmd7Dec.c",
+    "${lzma_sdk_pkgdir}/C/Ppmd7Enc.c",
+    "${lzma_sdk_pkgdir}/C/Sha256.c",
+    "${lzma_sdk_pkgdir}/C/Sha256Opt.c",
+    "${lzma_sdk_pkgdir}/C/Sort.c",
+    "${lzma_sdk_pkgdir}/C/SwapBytes.c",
+    "${lzma_sdk_pkgdir}/C/Threads.c",
+    "${lzma_sdk_pkgdir}/C/Xz.c",
+    "${lzma_sdk_pkgdir}/C/XzCrc64.c",
+    "${lzma_sdk_pkgdir}/C/XzCrc64Opt.c",
+    "${lzma_sdk_pkgdir}/C/XzDec.c",
+    "${lzma_sdk_pkgdir}/C/XzEnc.c",
+    "${lzma_sdk_pkgdir}/C/XzIn.c",
+  ]
+
+  public_configs = [ ":lzma_sdk_cfg" ]
+}
+
+executable("lzma_util") {
+  sources = [ "${lzma_sdk_pkgdir}/C/Util/Lzma/LzmaUtil.c" ]
+
+  public_deps = [ ":lzma_sdk" ]
+}
+
+executable("7z") {
+  sources = [ "${lzma_sdk_pkgdir}/C/Util/7z/7zMain.c" ]
+
+  public_deps = [ ":lzma_sdk" ]
+}
+
+group("default") {
+  deps = [ ":lzma_sdk" ]
+}

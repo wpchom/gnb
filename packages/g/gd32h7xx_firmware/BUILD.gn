@@ -2,7 +2,8 @@ declare_args() {
   gd32h7xx_firmware_pkgver = "latest"
 
   # config
-  gd32h7xx_firmware_devdef = ""
+  gd32h7xx_hxtal_value = 25000000
+  gd32h7xx_system_clock = "__SYSTEM_CLOCK_IRC64M"
 }
 
 declare_args() {
@@ -25,11 +26,31 @@ pkggroup("cmsis") {
 }
 
 config("gd32h7xx_firmware_cfg") {
-  include_dirs =
-      [ "${gd32h7xx_firmware_pkgdir}/GD32H7xx_standard_peripheral/Include" ]
+  include_dirs = [
+    "${gd32h7xx_firmware_pkgdir}/CMSIS/GD/GD32H7xx/Include",
+    "${gd32h7xx_firmware_pkgdir}/GD32H7xx_standard_peripheral/Include",
+    "include",
+  ]
+
+  defines = [ "GD32H7XX" ]
+
+  if (defined(gd32h7xx_hxtal_value) && gd32h7xx_hxtal_value > 0) {
+    defines += [ "HXTAL_VALUE=${gd32h7xx_hxtal_value}" ]
+  }
 }
 
-source_set("gd32h7xx_firmware") {
+static_library("gd32h7xx_firmware") {
+  sources = [
+    "${gd32h7xx_firmware_pkgdir}/CMSIS/GD/GD32H7xx/Source/system_gd32h7xx.c",
+    "src/gd32h7xx_redirect.c",
+  ]
+
+  defines = []
+
+  if (defined(gd32h7xx_system_clock) && gd32h7xx_system_clock != "") {
+    defines += [ "${gd32h7xx_system_clock}" ]
+  }
+
   public_configs = [ ":gd32h7xx_firmware_cfg" ]
 
   public_deps = [ ":cmsis" ]

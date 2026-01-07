@@ -12,3 +12,7 @@ import("${gnb_repo_dir}/gnbuild/package.gni")
 
 # toolchain
 import("${gnb_repo_dir}/gnbuild/toolchain.gni")
+
+# default
+target_os = host_os
+target_cpu = host_cpu
