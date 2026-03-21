@@ -40,7 +40,12 @@ def check_gn(pkgs_dir, proxy):
     gn_bin = shutil.which("gn")
 
     if gn_bin == None:
-        _, gn_bin = package.package_download("gn", "latest", pkgs_dir, proxy)
+        _, gn_dir = package.package_download("gn", "latest", pkgs_dir, proxy)
+        gn_bin = os.path.join(
+            gn_dir,
+            "gn.exe" if platform.system().lower() == "windows" else "gn",
+        )
+        
     if os.path.exists(gn_bin) and platform.system().lower() in ["linux", "darwin"]:
         try:
             os.chmod(gn_bin, 0o755)
@@ -54,7 +59,12 @@ def check_ninja(pkgs_dir, proxy):
     ninja_bin = shutil.which("ninja")
 
     if ninja_bin == None:
-        _, ninja_bin = package.package_download("ninja", "latest", pkgs_dir, proxy)
+        _, ninja_dir = package.package_download("ninja", "latest", pkgs_dir, proxy)
+        ninja_bin = os.path.join(
+            ninja_dir,
+            "ninja.exe" if platform.system().lower() == "windows" else "ninja",
+        )
+
     if os.path.exists(ninja_bin) and platform.system().lower() in ["linux", "darwin"]:
         try:
             os.chmod(ninja_bin, 0o755)

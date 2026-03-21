@@ -11,14 +11,6 @@
                 "linux_arm64": "https://github.com/ninja-build/ninja/releases/download/v{version}/ninja-linux-aarch64.zip",
                 "macos_x86_64": "https://github.com/ninja-build/ninja/releases/download/v{version}/ninja-mac.zip",
                 "macos_arm64": "https://github.com/ninja-build/ninja/releases/download/v{version}/ninja-mac.zip"
-            },
-            "dir": {
-                "windows_x86_64": "ninja.exe",
-                "windows_arm64": "ninja.exe",
-                "linux_x86_64": "ninja",
-                "linux_arm64": "ninja",
-                "macos_x86_64": "ninja",
-                "macos_arm64": "ninja"
             }
         }
     ]

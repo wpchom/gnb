@@ -1,4 +1,6 @@
 declare_args() {
+  xpack_arm_none_eabi_gcc_pkgver = "latest"
+
   profile_common_flags = [
     "-fdiagnostics-color=always",
     "-fmessage-length=0",
@@ -13,7 +15,19 @@ declare_args() {
   profile_ldflags = []
 }
 
-template("gcc_toolchain") {
+declare_args() {
+  xpack_arm_none_eabi_gcc_pkgdir =
+      exec_script(gnb_pkgload,
+                  [
+                    "--download",
+                    "xpack_arm_none_eabi_gcc:${xpack_arm_none_eabi_gcc_pkgver}",
+                    "--pkgsrc",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+}
+
+template("xpack_arm_none_eabi_gcc") {
   not_needed(invoker, "*")
 
   toolchain(target_name) {
@@ -31,7 +45,7 @@ template("gcc_toolchain") {
     if (defined(invoker.prefix)) {
       prefix = invoker.prefix
     } else {
-      prefix = ""
+      prefix = "arm-none-eabi-"
     }
 
     if (host_os == "win") {
@@ -48,12 +62,12 @@ template("gcc_toolchain") {
       solink = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
       link = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
     } else {
-      asm = "${prefix}gcc${bin_ext}"
-      cc = "${prefix}gcc${bin_ext}"
-      cxx = "${prefix}g++${bin_ext}"
-      alink = "${prefix}ar${bin_ext}"
-      solink = "${prefix}g++${bin_ext}"
-      link = "${prefix}g++${bin_ext}"
+      asm = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cc = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cxx = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      alink = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
+      solink = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      link = "${xpack_arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
     }
 
     toolchain_asmflags = profile_common_flags + profile_asmflags
@@ -188,11 +202,7 @@ template("gcc_toolchain") {
 
       outputs = [ outfile ]
       default_output_dir = "{{root_out_dir}}"
-      if (target_os == "win") {
-        default_output_extension = ".exe"
-      } else {
-        default_output_extension = ".elf"
-      }
+      default_output_extension = ".elf"
     }
 
     tool("stamp") {
@@ -215,7 +225,7 @@ template("gcc_toolchain") {
   }
 }
 
-template("gcc_action") {
+template("arm_none_eabi_action") {
   action(target_name) {
     assert(invoker.script != "")
     forward_variables_from(invoker,
@@ -234,22 +244,18 @@ template("gcc_action") {
       script_bin = invoker.script
     }
 
-    if (defined(invoker.bindir)) {
-      if (defined(invoker.prefix)) {
-        args += [ rebase_path(invoker.prefix + script_bin, "", invoker.bindir) ]
-      } else {
-        args += [ rebase_path(script_bin, "", invoker.bindir) ]
-      }
-    } else {
-      if (defined(invoker.prefix)) {
-        args += [ invoker.prefix + script_bin ]
-      } else {
-        args += [ script_bin ]
-      }
-    }
+    args += [ rebase_path("arm-none-eabi-" + script_bin,
+                          "",
+                          "${xpack_arm_none_eabi_gcc_pkgdir}/bin") ]
 
     if (defined(invoker.args)) {
       args += invoker.args
     }
+  }
+}
+
+template("declare_toolchain") {
+  not_needed(invoker, "*")
+  xpack_arm_none_eabi_gcc(target_name) {
   }
 }

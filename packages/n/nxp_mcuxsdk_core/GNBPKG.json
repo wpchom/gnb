@@ -1,0 +1,10 @@
+{
+    "name": "nxp_mcuxsdk_core",
+    "versions": [
+        {
+            "version": "release/25.12.00",
+            "url": "https://github.com/nxp-mcuxpresso/mcuxsdk-core.git",
+            "dir": ""
+        }
+    ]
+}

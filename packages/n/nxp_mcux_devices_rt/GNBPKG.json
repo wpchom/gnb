@@ -1,0 +1,10 @@
+{
+    "name": "nxp_mcux_devices_rt",
+    "versions": [
+        {
+            "version": "release/25.12.00",
+            "url": "https://github.com/nxp-mcuxpresso/mcux-devices-rt.git",
+            "dir": ""
+        }
+    ]
+}

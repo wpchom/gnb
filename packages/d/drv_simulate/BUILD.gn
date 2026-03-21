@@ -5,7 +5,7 @@ declare_args() {
 
 declare_args() {
   if (drv_simulate_pkgpth == "") {
-    drv_simulate_pkgdir = exec_script(gnb_pkg_load,
+    drv_simulate_pkgdir = exec_script(gnb_pkgload,
                                       [
                                         "--download",
                                         "drv_simulate:${drv_simulate_pkgver}",

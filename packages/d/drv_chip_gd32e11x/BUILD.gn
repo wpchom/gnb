@@ -6,7 +6,7 @@ declare_args() {
 declare_args() {
   if (drv_chip_gd32e11x_pkgpth == "") {
     drv_chip_gd32e11x_pkgdir =
-        exec_script(gnb_pkg_load,
+        exec_script(gnb_pkgload,
                     [
                       "--download",
                       "drv_chip_gd32e11x:${drv_chip_gd32e11x_pkgver}",

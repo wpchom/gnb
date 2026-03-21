@@ -7,7 +7,7 @@ declare_args() {
 }
 
 declare_args() {
-  mbedtls_pkgdir = exec_script(gnb_pkg_load,
+  mbedtls_pkgdir = exec_script(gnb_pkgload,
                                [
                                  "--download",
                                  "mbedtls:${mbedtls_pkgver}",

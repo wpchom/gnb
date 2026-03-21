@@ -43,6 +43,7 @@ python3 gnb.py [build] [target] [-b <builddir>] [-p <profile>] [-o <outdir>] \
 说明：生成时自动导出 `compile_commands.json` 以便 IDE 使用。
 
 ## 清理
+缓存目录在`packages/.tmp`中，包含`buildout`构建输出、`download`临时下载、`resource`已下载；
 ```shell
 python3 gnb.py clean <outdir>
 ```

@@ -97,7 +97,7 @@ template("clang_toolchain") {
 
     whole_archive_flag = "-Wl,--whole-archive"
 
-    gcc_version = exec_script(gnb_exec,
+    gcc_version = exec_script(gnb_pkgexec,
                               [
                                 "${cc}",
                                 "--version",
@@ -225,21 +225,26 @@ template("clang_action") {
                              "args",
                            ])
 
-    script = gnb_exec
+    script = gnb_pkgexec
     args = []
+
+    if (host_os == "win") {
+      script_bin = invoker.script + ".exe"
+    } else {
+      script_bin = invoker.script
+    }
 
     if (defined(invoker.bindir)) {
       if (defined(invoker.prefix)) {
-        args +=
-            [ rebase_path(invoker.prefix + invoker.script, "", invoker.bindir) ]
+        args += [ rebase_path(invoker.prefix + script_bin, "", invoker.bindir) ]
       } else {
-        args += [ rebase_path(invoker.script, "", invoker.bindir) ]
+        args += [ rebase_path(script_bin, "", invoker.bindir) ]
       }
     } else {
       if (defined(invoker.prefix)) {
-        args += [ invoker.prefix + invoker.script ]
+        args += [ invoker.prefix + script_bin ]
       } else {
-        args += [ invoker.script ]
+        args += [ script_bin ]
       }
     }
 

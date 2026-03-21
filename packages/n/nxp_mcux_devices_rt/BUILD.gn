@@ -1,0 +1,108 @@
+declare_args() {
+  nxp_mcux_devices_rt_pkgver = "latest"
+  nxp_mcux_devices_rt_pkgpth = ""
+}
+
+declare_args() {
+  if (nxp_mcux_devices_rt_pkgpth == "") {
+    nxp_mcux_devices_rt_pkgdir =
+        exec_script(gnb_pkgload,
+                    [
+                      "--download",
+                      "nxp_mcux_devices_rt:${nxp_mcux_devices_rt_pkgver}",
+                      "--pkgsrc",
+                      gnb_pkgs_dir,
+                    ],
+                    "string")
+  } else {
+    nxp_mcux_devices_rt_pkgdir = nxp_mcux_devices_rt_pkgpth
+  }
+}
+
+declare_args() {
+  nxp_mcux_devices_rt_devser = "RT1170"
+  nxp_mcux_devices_rt_devsub = "MIMXRT1176"
+  nxp_mcux_devices_rt_devdef = "CPU_MIMXRT1176DVMAA_cm7"
+}
+
+pkggroup("cmsis") {
+  configs = [ "cmsis_core" ]
+}
+
+pkggroup("nxp_mcuxsdk_core") {
+  configs = [ "nxp_mcuxsdk_core_cfg" ]
+}
+
+config("nxp_mcux_devices_rt_cfg") {
+  include_dirs = [
+    "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}",
+    "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers",
+    "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/periph",
+  ]
+
+  if (nxp_mcux_devices_rt_devsub == "MIMXRT1176") {
+    include_dirs += [
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/anatop_ai",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/flexram",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/memory",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/nic301",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/romapi",
+    ]
+  } else {
+  }
+
+  defines = [ "${nxp_mcux_devices_rt_devdef}" ]
+}
+
+source_set("nxp_mcux_devices_rt_cm7") {
+  sources = [
+    "${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/startup_${nxp_mcux_devices_rt_devsub}_cm7.c",
+    "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/system_${nxp_mcux_devices_rt_devsub}_cm7.c",
+  ]
+
+  if (nxp_mcux_devices_rt_devsub == "MIMXRT1176") {
+    sources += [
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/fsl_clock.c",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/fsl_soc_mipi_csi2rx.c",
+
+      # anatop_ai
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/anatop_ai/fsl_anatop_ai.c",
+
+      # flexram
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/flexram/fsl_flexram_allocate.c",
+
+      # romapi
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/romapi/fsl_romapi.c",
+
+      # power
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power/fsl_dcdc.c",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power/fsl_gpc.c",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power/fsl_pgmc.c",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power/fsl_pmu.c",
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/drivers/power/fsl_soc_src.c",
+
+      # xip
+      "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/xip/fsl_flexspi_nor_boot.c",
+    ]
+  } else {
+  }
+
+  public_configs = [ ":nxp_mcux_devices_rt_cfg" ]
+
+  public_deps = [
+    ":cmsis",
+    ":nxp_mcuxsdk_core",
+  ]
+}
+
+source_set("nxp_mcux_devices_rt_cm4") {
+  sources = [
+    "${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/startup_${nxp_mcux_devices_rt_devsub}_cm4.c",
+    "${nxp_mcux_devices_rt_pkgdir}/${nxp_mcux_devices_rt_devser}/${nxp_mcux_devices_rt_devsub}/system_${nxp_mcux_devices_rt_devsub}_cm4.c",
+  ]
+
+  public_configs = [ ":nxp_mcux_devices_rt_cfg" ]
+
+  public_deps = [ ":cmsis" ]
+}

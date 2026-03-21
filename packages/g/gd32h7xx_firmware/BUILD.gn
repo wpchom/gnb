@@ -8,7 +8,7 @@ declare_args() {
 
 declare_args() {
   gd32h7xx_firmware_pkgdir =
-      exec_script(gnb_pkg_load,
+      exec_script(gnb_pkgload,
                   [
                     "--download",
                     "gd32h7xx_firmware:${gd32h7xx_firmware_pkgver}",
@@ -22,7 +22,7 @@ declare_toolchain(profile_toolchain) {
 }
 
 pkggroup("cmsis") {
-  configs = [ ":cmsis_core" ]
+  configs = [ "cmsis_core" ]
 }
 
 config("gd32h7xx_firmware_cfg") {

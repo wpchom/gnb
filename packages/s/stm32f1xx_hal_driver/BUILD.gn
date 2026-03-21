@@ -7,7 +7,7 @@ declare_args() {
 
 declare_args() {
   stm32f1xx_hal_driver_pkgdir =
-      exec_script(gnb_pkg_load,
+      exec_script(gnb_pkgload,
                   [
                     "--download",
                     "stm32f1xx_hal_driver:${stm32f1xx_hal_driver_pkgver}",

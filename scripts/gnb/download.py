@@ -10,36 +10,32 @@ import shutil, subprocess
 from . import utils, compress
 
 
-def _download_by_curl(url, dir, proxy=None, cont=False, timeout=30):
+def _download_by_curl(url, dir, proxy=None, remove=False, timeout=1800):
     curl_bin = shutil.which("curl")
     if curl_bin == None:
         utils.error("`curl` not found")
 
-    curl_command = [
-        curl_bin,
-        "-OsL",
-        "--max-time",
-        str(timeout),
-        "--write-out",
-        "%{filename_effective}",
-        "--user-agent",
-        utils.USER_AGENT,
-    ]
+    curl_command = [curl_bin, "-sL", "-C", "-"]
+    curl_command += ["--max-time", str(timeout)]
+    curl_command += ["--write-out", "%{filename_effective}"]
+    curl_command += ["--user-agent", utils.USER_AGENT]
 
     if proxy != None:
         curl_command += ["--proxy", proxy]
 
-    if cont:
-        curl_command += ["-C", "-"]
-    else:
-        curl_command += ["-J"]
-
     ret = subprocess.run(
-        curl_command + ["--parallel", url], cwd=dir, check=False, capture_output=True
+        curl_command + ["--parallel", "-O", url],
+        cwd=dir,
+        check=True,
+        capture_output=True,
     )
+
     if ret.returncode == 2:
         ret = subprocess.run(
-            curl_command + [url], cwd=dir, check=False, capture_output=True
+            curl_command + ["-O", url],
+            cwd=dir,
+            check=True,
+            capture_output=True,
         )
 
     return ret
@@ -84,10 +80,8 @@ def download_from_url(url, download_path, proxy, remove=False, timeout=30):
 
     if not os.path.exists(download_tmp):
         os.makedirs(download_tmp, exist_ok=True)
-        ret = _download_by_curl(url, download_tmp, proxy, False, timeout)
-    else:
-        ret = _download_by_curl(url, download_tmp, proxy, True, timeout)
 
+    ret = _download_by_curl(url, download_tmp, proxy, timeout)
     if ret.returncode != 0:
         utils.error(f"Download `{url}` error: {ret.stderr.decode().strip()}")
 

@@ -1,0 +1,67 @@
+declare_args() {
+  littlefs_pkgver = "latest"
+
+  # littlefs configuration
+  littlefs_config_file = ""
+
+  littlefs_max_name_size = 255
+  littlefs_max_file_size = 2147483647
+  littlefs_max_attr_size = 1022
+
+  littlefs_readonly_enable = false
+  littlefs_migrate_enable = false
+}
+
+declare_args() {
+  littlefs_pkgdir = exec_script(gnb_pkgload,
+                                [
+                                  "--download",
+                                  "littlefs:${littlefs_pkgver}",
+                                  "--pkgsrc",
+                                  gnb_pkgs_dir,
+                                ],
+                                "string")
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+config("littlefs_cfg") {
+  include_dirs = [ "${littlefs_pkgdir}" ]
+
+  defines = [
+    "LFS_NO_DEBUG=1",
+    "LFS_NO_WARN=1",
+    "LFS_NO_ERROR=1",
+    "LFS_NAME_MAX=${littlefs_max_name_size}",
+    "LFS_FILE_MAX=${littlefs_max_file_size}",
+    "LFS_ATTR_MAX=${littlefs_max_attr_size}",
+  ]
+
+  if (defined(littlefs_readonly_enable) && littlefs_readonly_enable) {
+    defines += [ "LFS_READONLY=1" ]
+  }
+
+  if (defined(littlefs_migrate_enable) && littlefs_migrate_enable) {
+    defines += [ "LFS_MIGRATE=1" ]
+  }
+
+  if (defined(littlefs_config_file) && littlefs_config_file != "") {
+    defines += [ "LFS_CONFIG=\"${littlefs_config_file}\"" ]
+  }
+}
+
+static_library("littlefs") {
+  sources = [
+    "${littlefs_pkgdir}/lfs.c",
+    "${littlefs_pkgdir}/lfs_util.c",
+  ]
+
+  include_dirs = [ "${littlefs_pkgdir}" ]
+
+  public_configs = [ ":littlefs_cfg" ]
+}
+
+group("default") {
+  public_deps = [ ":littlefs" ]
+}

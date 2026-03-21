@@ -2,11 +2,6 @@ declare_args() {
   gnb_repo_dir = getenv("GNB_REPO_DIR")
 }
 
-declare_args() {
-  gnb_exec = rebase_path("${gnb_repo_dir}/scripts/exec.py")
-  gnb_which = rebase_path("${gnb_repo_dir}/scripts/which.py")
-}
-
 # package
 import("${gnb_repo_dir}/gnbuild/package.gni")
 

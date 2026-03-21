@@ -3,7 +3,7 @@ declare_args() {
 }
 
 declare_args() {
-  cmsis_pkgdir = exec_script(gnb_pkg_load,
+  cmsis_pkgdir = exec_script(gnb_pkgload,
                              [
                                "--download",
                                "cmsis:${cmsis_pkgver}",

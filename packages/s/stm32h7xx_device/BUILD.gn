@@ -7,7 +7,7 @@ declare_args() {
 
 declare_args() {
   stm32h7xx_device_pkgdir =
-      exec_script(gnb_pkg_load,
+      exec_script(gnb_pkgload,
                   [
                     "--download",
                     "stm32h7xx_device:${stm32h7xx_device_pkgver}",
@@ -21,7 +21,7 @@ declare_toolchain(profile_toolchain) {
 }
 
 pkggroup("cmsis") {
-  configs = [ ":cmsis_core" ]
+  configs = [ "cmsis_core" ]
 }
 
 config("stm32h7xx_device_cfg") {

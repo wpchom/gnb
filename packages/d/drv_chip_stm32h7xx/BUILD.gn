@@ -6,7 +6,7 @@ declare_args() {
 declare_args() {
   if (drv_chip_stm32h7xx_pkgpth == "") {
     drv_chip_stm32h7xx_pkgdir =
-        exec_script(gnb_pkg_load,
+        exec_script(gnb_pkgload,
                     [
                       "--download",
                       "drv_chip_stm32h7xx:${drv_chip_stm32h7xx_pkgver}",
