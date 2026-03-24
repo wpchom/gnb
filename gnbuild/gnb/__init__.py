@@ -7,26 +7,27 @@ import sys
 sys.dont_write_bytecode = True
 
 import argparse
-from . import utils, build, clean, package, compress
+# from . import utils, build, clean, package, compress
+from . import utils, package
 
 
 def _parser():
     parser = argparse.ArgumentParser(description="GNB buildtools")
     subparsers = parser.add_subparsers(title="action", dest="action")
 
-    parser.add_argument("-v", "--verbose", action="store_true", default=False)
-    parser.add_argument("-x", "--proxy", type=str, default=os.getenv("GNB_PROXY"))
+    # parser.add_argument("-v", "--verbose", action="store_true", default=False)
+    # parser.add_argument("-x", "--proxy", type=str, default=os.getenv("GNB_PROXY"))
 
     subparsers.add_parser("update", aliases=["u"], help="update gnb")
 
-    build.parser(subparsers)
-    clean.parser(subparsers)
     package.parser(subparsers)
-    compress.parser(subparsers)
+    # build.parser(subparsers)
+    # clean.parser(subparsers)
+    # compress.parser(subparsers)
 
     parser.set_defaults(action="build")
 
-    return parser
+    return parser.parse_args()
 
 
 def _action(args):
@@ -45,23 +46,20 @@ def _action(args):
 
 
 def main():
-    args = _parser().parse_args()
+    args = _parser()
 
     args.repo_dir = utils.GNB_REPO_DIR
 
     # TODO: read from config file
-    args.pkgs_dir = os.path.join(args.repo_dir, "packages")
+    # args.pkgs_dir = os.path.join(args.repo_dir, "packages")
 
-    if args.proxy != None:
-        os.environ["GNB_PROXY"] = args.proxy
-
-    if args.verbose:
-        utils.debug(args)
+    # if args.proxy != None:
+    #     os.environ["GNB_PROXY"] = args.proxy
 
     _action(args)
 
-    if os.getenv("GNB_PROXY"):
-        os.environ["GNB_PROXY"] = ""
+    # if os.getenv("GNB_PROXY"):
+    #     os.environ["GNB_PROXY"] = None
 
 
 if __name__ == "__main__":

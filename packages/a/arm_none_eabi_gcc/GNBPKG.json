@@ -9,6 +9,7 @@
                 "windows_x86_64": "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-mingw-w64-x86_64-arm-none-eabi.zip",
                 "linux_x86_64": "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-x86_64-arm-none-eabi.tar.xz",
                 "linux_arm64": "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-aarch64-arm-none-eabi.tar.xz",
+                "macos_x86_64": "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-x86_64-arm-none-eabi.tar.xz",
                 "macos_arm64": "https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/{version}/binrel/arm-gnu-toolchain-{version}-darwin-arm64-arm-none-eabi.tar.xz"
             },
             "dir": {
@@ -24,7 +25,7 @@
             "version": "14.3.rel1"
         },
         {
-            "version": "13.2.rel1"
+            "version": "14.2.rel1"
         }
     ]
 }

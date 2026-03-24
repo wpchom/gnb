@@ -6,10 +6,10 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import shutil, platform
-from . import package
+import shutil
+import platform
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
+HTTP_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
 
 GNB_REPO_GIT = "https://github.com/wpchom/gnb.git"
 GNB_REPO_DIR = os.path.dirname(
@@ -45,7 +45,7 @@ def check_gn(pkgs_dir, proxy):
             gn_dir,
             "gn.exe" if platform.system().lower() == "windows" else "gn",
         )
-        
+
     if os.path.exists(gn_bin) and platform.system().lower() in ["linux", "darwin"]:
         try:
             os.chmod(gn_bin, 0o755)

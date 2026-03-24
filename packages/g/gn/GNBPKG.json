@@ -10,6 +10,10 @@
                 "linux_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/linux-arm64/+/{version}",
                 "macos_x86_64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-amd64/+/{version}",
                 "macos_arm64": "https://chrome-infra-packages.appspot.com/dl/gn/gn/mac-arm64/+/{version}"
+            },
+            "path": {
+                "windows_x86_64": "gn.exe",
+                "*": "gn"
             }
         },
         {
