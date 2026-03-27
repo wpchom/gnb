@@ -1,9 +1,9 @@
 {
-    "name": "xpack_arm_none_eabi_gcc",
+    "name": "xpack-arm-none-eabi-gcc",
     "type": "binary",
     "versions": [
         {
-            "version": "14.2.1-1.1",
+            "version": "15.2.1-1.1",
             "url": {
                 "windows_x86_64": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v{version}/xpack-arm-none-eabi-gcc-{version}-win32-x64.zip",
                 "linux_x86_64": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v{version}/xpack-arm-none-eabi-gcc-{version}-linux-x64.tar.gz",
@@ -12,13 +12,11 @@
                 "macos_arm64": "https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack/releases/download/v{version}/xpack-arm-none-eabi-gcc-{version}-darwin-arm64.tar.gz"
             },
             "dir": {
-                "windows_x86": "xpack-arm-none-eabi-gcc-{version}",
-                "windows_x86_64": "xpack-arm-none-eabi-gcc-{version}",
-                "linux_x86_64": "xpack-arm-none-eabi-gcc-{version}",
-                "linux_arm64": "xpack-arm-none-eabi-gcc-{version}",
-                "macos_x86_64": "xpack-arm-none-eabi-gcc-{version}",
-                "macos_arm64": "xpack-arm-none-eabi-gcc-{version}"
+                "*": "xpack-arm-none-eabi-gcc-{version}"
             }
+        },
+        {
+            "version": "14.2.1-1.1"
         },
         {
             "version": "13.3.1-1.1"

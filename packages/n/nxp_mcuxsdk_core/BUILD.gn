@@ -1,40 +1,38 @@
 declare_args() {
-  nxp_mcuxsdk_core_pkgver = "latest"
-  nxp_mcuxsdk_core_pkgpth = ""
-}
+  nxp_mcuxsdk_core_pkgver = ""
+  nxp_mcuxsdk_core_pkgsrc = ""
 
-declare_args() {
-  if (nxp_mcuxsdk_core_pkgpth == "") {
-    nxp_mcuxsdk_core_pkgdir =
-        exec_script(gnb_pkgload,
-                    [
-                      "--download",
-                      "nxp_mcuxsdk_core:${nxp_mcuxsdk_core_pkgver}",
-                      "--pkgsrc",
-                      gnb_pkgs_dir,
-                    ],
-                    "string")
-  } else {
-    nxp_mcuxsdk_core_pkgdir = nxp_mcuxsdk_core_pkgpth
+  nxp_mcuxsdk_core_pkgcfg = {
+    # board_path
   }
 }
 
-declare_args() {
-  nxp_mcuxsdk_board_path = ""
+if (nxp_mcuxsdk_core_pkgsrc != "") {
+  nxp_mcuxsdk_core_pkgdir = nxp_mcuxsdk_core_pkgsrc
+} else {
+  nxp_mcuxsdk_core_pkgdir = exec_script(gnb_pkgload,
+                                        [
+                                          "nxp_mcuxsdk_core",
+                                          "--version",
+                                          nxp_mcuxsdk_core_pkgver,
+                                          "--pkgs_dir",
+                                          gnb_pkgs_dir,
+                                        ],
+                                        "string")
 }
 
 config("nxp_mcuxsdk_core_cfg") {
   include_dirs = [ "${nxp_mcuxsdk_core_pkgdir}/drivers/common" ]
 
-  if (defined(nxp_mcuxsdk_board_path) && (nxp_mcuxsdk_board_path !="")) {
-    include_dirs += [ "${nxp_mcuxsdk_board_path}" ]
+  if (defined(nxp_mcuxsdk_core_pkgcfg.board_path)) {
+    include_dirs += [ "${nxp_mcuxsdk_core_pkgcfg.board_path}" ]
   }
 }
 
 static_library("nxp_mcuxsdk_core") {
   sources = []
 
-  public_configs = [":nxp_mcuxsdk_core_cfg"]
+  public_configs = [ ":nxp_mcuxsdk_core_cfg" ]
 }
 
 group("default") {

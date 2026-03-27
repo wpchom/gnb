@@ -3,8 +3,12 @@
     "versions": [
         {
             "version": "4.3.5",
-            "url": "https://github.com/STMicroelectronics/cmsis-device-f1/archive/refs/tags/v{version}.tar.gz",
-            "dir": "cmsis-device-f1-{version}"
+            "url": {
+                "*": "https://github.com/STMicroelectronics/cmsis-device-f1/archive/refs/tags/v{version}.tar.gz"
+            },
+            "dir": {
+                "*": "cmsis-device-f1-{version}"
+            }
         }
     ]
 }

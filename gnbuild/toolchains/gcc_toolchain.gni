@@ -197,7 +197,7 @@ template("gcc_toolchain") {
 
     tool("stamp") {
       if (host_os == "win") {
-        command = "type nul > {{output}}"
+        command = "cmd /c type nul > {{output}}"
       } else {
         command = "touch {{output}}"
       }
@@ -206,7 +206,7 @@ template("gcc_toolchain") {
 
     tool("copy") {
       if (host_os == "win") {
-        command = "xcopy /Y  {{source}} {{output}}"
+        command = "cmd /c copy /Y {{source}} {{output}}"
       } else {
         command = "cp -af {{source}} {{output}}"
       }
@@ -215,7 +215,7 @@ template("gcc_toolchain") {
   }
 }
 
-template("gcc_action") {
+template("toolchain_action") {
   action(target_name) {
     assert(invoker.script != "")
     forward_variables_from(invoker,

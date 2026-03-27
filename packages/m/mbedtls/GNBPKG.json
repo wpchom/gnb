@@ -3,8 +3,14 @@
     "versions": [
         {
             "version": "4.0.0",
-            "url": "https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-{version}/mbedtls-{version}.tar.bz2",
-            "dir": "mbedtls-{version}"
+            "url": {
+                "*": "https://github.com/Mbed-TLS/mbedtls/releases/download/mbedtls-{version}/mbedtls-{version}.tar.bz2",
+                "_": "https://codeload.github.com/Mbed-TLS/mbedtls/legacy.tar.gz/refs/tags/v{version}"
+            },
+            "dir": {
+                "*": "mbedtls-{version}",
+                "_": "Mbed-TLS-mbedtls-e90c164"
+            }
         }
     ]
 }

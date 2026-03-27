@@ -5,14 +5,14 @@ declare_args() {
 declare_toolchain(profile_toolchain) {
 }
 
-config("config_demo_lib") {
+config("demo_lib_cfg") {
   include_dirs = [ "include" ]
 }
 
 static_library("demo_lib") {
   sources = [ "src/demo_lib.c" ]
 
-  public_configs = [ ":config_demo_lib" ]
+  public_configs = [ ":demo_lib_cfg" ]
 }
 
 group("default") {

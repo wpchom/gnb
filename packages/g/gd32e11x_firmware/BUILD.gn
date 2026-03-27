@@ -1,21 +1,25 @@
 declare_args() {
-  gd32e11x_firmware_pkgver = "latest"
+  gd32e11x_firmware_pkgver = ""
+  gd32e11x_firmware_pkgsrc = ""
 
-  # config
-  gd32e11x_hxtal_value = 8000000
-  gd32e11x_system_clock = "__SYSTEM_CLOCK_IRC8M"
+  gd32e11x_firmware_pkgcfg = {
+    hxtal_value = 8000000
+    system_clock = "__SYSTEM_CLOCK_IRC8M"
+  }
 }
 
-declare_args() {
-  gd32e11x_firmware_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "gd32e11x_firmware:${gd32e11x_firmware_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
+if (gd32e11x_firmware_pkgsrc != "") {
+  gd32e11x_firmware_pkgdir = gd32e11x_firmware_pkgsrc
+} else {
+  gd32e11x_firmware_pkgdir = exec_script(gnb_pkgload,
+                                         [
+                                           "gd32e11x_firmware",
+                                           "--version",
+                                           gd32e11x_firmware_pkgver,
+                                           "--pkgs_dir",
+                                           gnb_pkgs_dir,
+                                         ],
+                                         "string")
 }
 
 pkggroup("cmsis") {
@@ -31,8 +35,8 @@ config("gd32e11x_firmware_cfg") {
 
   defines = [ "GD32E11X" ]
 
-  if (defined(gd32e11x_hxtal_value) && gd32e11x_hxtal_value > 0) {
-    defines += [ "HXTAL_VALUE=${gd32e11x_hxtal_value}" ]
+  if (defined(gd32e11x_firmware_pkgcfg.hxtal_value)) {
+    defines += [ "HXTAL_VALUE=${gd32e11x_firmware_pkgcfg.hxtal_value}" ]
   }
 }
 
@@ -44,8 +48,8 @@ static_library("gd32e11x_firmware") {
 
   defines = []
 
-  if (defined(gd32e11x_system_clock) && gd32e11x_system_clock != "") {
-    defines += [ "${gd32e11x_system_clock}" ]
+  if (defined(gd32e11x_firmware_pkgcfg.system_clock)) {
+    defines += [ "${gd32e11x_firmware_pkgcfg.system_clock}" ]
   }
 
   public_configs = [ ":gd32e11x_firmware_cfg" ]

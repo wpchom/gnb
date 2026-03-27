@@ -3,8 +3,12 @@
     "versions": [
         {
             "version": "1.10.6",
-            "url": "https://github.com/STMicroelectronics/cmsis-device-h7/archive/refs/tags/v{version}.tar.gz",
-            "dir": "cmsis-device-h7-{version}"
+            "url": {
+                "*": "https://github.com/STMicroelectronics/cmsis-device-h7/archive/refs/tags/v{version}.tar.gz"
+            },
+            "dir": {
+                "*": "cmsis-device-h7-{version}"
+            }
         }
     ]
 }

@@ -1,13 +1,20 @@
 declare_args() {
-  cmsis_pkgver = "latest"
+  cmsis_pkgver = ""
+  cmsis_pkgsrc = ""
+
+  cmsis_pkgcfg = {
+  }
 }
 
-declare_args() {
+if (cmsis_pkgsrc != "") {
+  cmsis_pkgdir = cmsis_pkgsrc
+} else {
   cmsis_pkgdir = exec_script(gnb_pkgload,
                              [
-                               "--download",
-                               "cmsis:${cmsis_pkgver}",
-                               "--pkgsrc",
+                               "cmsis",
+                               "--version",
+                               cmsis_pkgver,
+                               "--pkgs_dir",
                                gnb_pkgs_dir,
                              ],
                              "string")

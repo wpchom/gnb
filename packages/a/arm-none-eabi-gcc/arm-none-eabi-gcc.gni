@@ -1,6 +1,9 @@
 declare_args() {
-  xpack_riscv_none_elf_gcc_pkgver = "latest"
+  arm_none_eabi_gcc_pkgver = ""
+  arm_none_eabi_gcc_pkgsrc = ""
+}
 
+declare_args() {
   profile_common_flags = [
     "-fdiagnostics-color=always",
     "-fmessage-length=0",
@@ -15,20 +18,21 @@ declare_args() {
   profile_ldflags = []
 }
 
-declare_args() {
-  xpack_riscv_none_elf_gcc_pkgdir =
-      exec_script(
-          gnb_pkgload,
-          [
-            "--download",
-            "xpack_riscv_none_elf_gcc:${xpack_riscv_none_elf_gcc_pkgver}",
-            "--pkgsrc",
-            gnb_pkgs_dir,
-          ],
-          "string")
+if (arm_none_eabi_gcc_pkgsrc != "") {
+  arm_none_eabi_gcc_pkgdir = arm_none_eabi_gcc_pkgsrc
+} else {
+  arm_none_eabi_gcc_pkgdir = exec_script(gnb_pkgload,
+                                         [
+                                           "arm-none-eabi-gcc",
+                                           "--version",
+                                           arm_none_eabi_gcc_pkgver,
+                                           "--pkgs_dir",
+                                           gnb_pkgs_dir,
+                                         ],
+                                         "string")
 }
 
-template("xpack_riscv_none_elf_gcc") {
+template("arm_none_eabi_toolchain") {
   not_needed(invoker, "*")
 
   toolchain(target_name) {
@@ -63,12 +67,12 @@ template("xpack_riscv_none_elf_gcc") {
       solink = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
       link = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
     } else {
-      asm = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
-      cc = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
-      cxx = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
-      alink = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
-      solink = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
-      link = "${xpack_riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      asm = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cc = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cxx = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      alink = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
+      solink = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      link = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
     }
 
     toolchain_asmflags = profile_common_flags + profile_asmflags
@@ -208,7 +212,7 @@ template("xpack_riscv_none_elf_gcc") {
 
     tool("stamp") {
       if (host_os == "win") {
-        command = "type nul > {{output}}"
+        command = "cmd /c type nul > {{output}}"
       } else {
         command = "touch {{output}}"
       }
@@ -217,7 +221,7 @@ template("xpack_riscv_none_elf_gcc") {
 
     tool("copy") {
       if (host_os == "win") {
-        command = "xcopy /Y  {{source}} {{output}}"
+        command = "cmd /c copy /Y {{source}} {{output}}"
       } else {
         command = "cp -af {{source}} {{output}}"
       }
@@ -226,7 +230,7 @@ template("xpack_riscv_none_elf_gcc") {
   }
 }
 
-template("arm_none_eabi_action") {
+template("toolchain_action") {
   action(target_name) {
     assert(invoker.script != "")
     forward_variables_from(invoker,
@@ -247,7 +251,7 @@ template("arm_none_eabi_action") {
 
     args += [ rebase_path("arm-none-eabi-" + script_bin,
                           "",
-                          "${xpack_riscv_none_elf_gcc_pkgdir}/bin") ]
+                          "${arm_none_eabi_gcc_pkgdir}/bin") ]
 
     if (defined(invoker.args)) {
       args += invoker.args
@@ -257,6 +261,6 @@ template("arm_none_eabi_action") {
 
 template("declare_toolchain") {
   not_needed(invoker, "*")
-  xpack_riscv_none_elf_gcc(target_name) {
+  arm_none_eabi_toolchain(target_name) {
   }
 }

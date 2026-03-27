@@ -3,8 +3,12 @@
     "versions": [
         {
             "version": "2501",
-            "url": "https://www.7-zip.org/a/lzma{version}.7z",
-            "dir": ""
+            "url": {
+                "*": "https://www.7-zip.org/a/lzma{version}.7z"
+            },
+            "dir": {
+                "*": ""
+            }
         },
         {
             "version": "2301"

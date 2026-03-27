@@ -1,27 +1,37 @@
 declare_args() {
-  mbedtls_pkgver = "latest"
+  mbedtls_pkgver = ""
+  mbedtls_pkgsrc = ""
 
-  # config
-  mbedtls_config_file = ""
-  tf_psa_crypto_config_file = ""
+  mbedtls_pkgcfg = {
+    # cfgfile (MBEDTLS_CONFIG_FILE)
+    # tf_pas_cfgfile (TF_PSA_CRYPTO_CONFIG_FILE)
+  }
 }
 
-declare_args() {
+if (mbedtls_pkgsrc != "") {
+  mbedtls_pkgdir = mbedtls_pkgsrc
+} else {
   mbedtls_pkgdir = exec_script(gnb_pkgload,
                                [
-                                 "--download",
-                                 "mbedtls:${mbedtls_pkgver}",
-                                 "--pkgsrc",
+                                 "mbedtls",
+                                 "--version",
+                                 mbedtls_pkgver,
+                                 "--pkgs_dir",
                                  gnb_pkgs_dir,
                                ],
                                "string")
 }
-
-declare_args() {
-  tf_psa_crypto_pkgdir = "${mbedtls_pkgdir}/tf-psa-crypto"
-}
+tf_psa_crypto_pkgdir = "${mbedtls_pkgdir}/tf-psa-crypto"
 
 declare_toolchain(profile_toolchain) {
+}
+
+config("mbedtls_cfg") {
+  include_dirs = [ "${mbedtls_pkgdir}/include" ]
+
+  if (defined(mbedtls_pkgcfg.cfgfile)) {
+    defines = [ "MBEDTLS_CONFIG_FILE=\"${mbedtls_pkgcfg.cfgfile}\"" ]
+  }
 }
 
 config("tf_psa_crypto_cfg") {
@@ -30,8 +40,9 @@ config("tf_psa_crypto_cfg") {
     "${tf_psa_crypto_pkgdir}/drivers/builtin/include",
   ]
 
-  if (defined(tf_psa_crypto_config_file) && tf_psa_crypto_config_file != "") {
-    defines = [ "TF_PSA_CRYPTO_CONFIG_FILE=\"${tf_psa_crypto_config_file}\"" ]
+  if (defined(mbedtls_pkgcfg.tf_pas_cfgfile)) {
+    defines =
+        [ "TF_PSA_CRYPTO_CONFIG_FILE=\"${mbedtls_pkgcfg.tf_pas_cfgfile}\"" ]
   }
 }
 
@@ -131,14 +142,6 @@ static_library("tf_psa_crypto") {
   deps = [ ":tf_psa_crypto_builtin" ]
 
   public_configs = [ ":tf_psa_crypto_cfg" ]
-}
-
-config("mbedtls_cfg") {
-  include_dirs = [ "${mbedtls_pkgdir}/include" ]
-
-  if (defined(mbedtls_config_file) && mbedtls_config_file != "") {
-    defines = [ "MBEDTLS_CONFIG_FILE=\"${mbedtls_config_file}\"" ]
-  }
 }
 
 static_library("mbedx509") {

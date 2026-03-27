@@ -1,22 +1,20 @@
 declare_args() {
-  drv_chip_gd32e11x_pkgver = "latest"
-  drv_chip_gd32e11x_pkgpth = ""
+  drv_chip_gd32e11x_pkgver = ""
+  drv_chip_gd32e11x_pkgsrc = ""
 }
 
-declare_args() {
-  if (drv_chip_gd32e11x_pkgpth == "") {
-    drv_chip_gd32e11x_pkgdir =
-        exec_script(gnb_pkgload,
-                    [
-                      "--download",
-                      "drv_chip_gd32e11x:${drv_chip_gd32e11x_pkgver}",
-                      "--pkgsrc",
-                      gnb_pkgs_dir,
-                    ],
-                    "string")
-  } else {
-    drv_chip_gd32e11x_pkgdir = drv_chip_gd32e11x_pkgpth
-  }
+if (drv_chip_gd32e11x_pkgsrc != "") {
+  drv_chip_gd32e11x_pkgdir = drv_chip_gd32e11x_pkgsrc
+} else {
+  drv_chip_gd32e11x_pkgdir = exec_script(gnb_pkgload,
+                                         [
+                                           "drv_chip_gd32e11x",
+                                           "--version",
+                                           drv_chip_gd32e11x_pkgver,
+                                           "--pkgs_dir",
+                                           gnb_pkgs_dir,
+                                         ],
+                                         "string")
 }
 
 group("default") {

@@ -1,5 +1,5 @@
 {
-    "name": "xpack_riscv_none_elf_gcc",
+    "name": "xpack-riscv-none-elf-gcc",
     "type": "binary",
     "versions": [
         {
@@ -12,12 +12,7 @@
                 "macos_arm64": "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v{version}/xpack-riscv-none-elf-gcc-{version}-darwin-arm64.tar.gz"
             },
             "dir": {
-                "windows_x86": "xpack-riscv-none-elf-gcc-{version}",
-                "windows_x86_64": "xpack-riscv-none-elf-gcc-{version}",
-                "linux_x86_64": "xpack-riscv-none-elf-gcc-{version}",
-                "linux_arm64": "xpack-riscv-none-elf-gcc-{version}",
-                "macos_x86_64": "xpack-riscv-none-elf-gcc-{version}",
-                "macos_arm64": "xpack-riscv-none-elf-gcc-{version}"
+                "*": "xpack-riscv-none-elf-gcc-{version}"
             }
         },
         {

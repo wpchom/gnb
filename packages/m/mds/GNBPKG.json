@@ -3,8 +3,9 @@
     "versions": [
         {
             "version": "develop",
-            "url": "https://github.com/wpchom/mds.git",
-            "dir": ""
+            "url": {
+                "*": "https://github.com/wpchom/mds.git"
+            }
         }
     ]
 }

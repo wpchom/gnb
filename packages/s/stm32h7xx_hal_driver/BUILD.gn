@@ -1,23 +1,24 @@
 declare_args() {
-  stm32h7xx_hal_driver_pkgver = "latest"
+  stm32h7xx_hal_driver_pkgver = ""
+  stm32h7xx_hal_driver_pkgsrc = ""
 
-  # config
-  stm32h7xx_hal_driver_confdir = rebase_path("include")
+  stm32h7xx_hal_driver_pkgcfg = {
+    # device_def
+  }
 }
 
-declare_args() {
-  stm32h7xx_hal_driver_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "stm32h7xx_hal_driver:${stm32h7xx_hal_driver_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
-}
-
-declare_toolchain(profile_toolchain) {
+if (stm32h7xx_hal_driver_pkgsrc != "") {
+  stm32h7xx_hal_driver_pkgdir = stm32h7xx_hal_driver_pkgsrc
+} else {
+  stm32h7xx_hal_driver_pkgdir = exec_script(gnb_pkgload,
+                                            [
+                                              "stm32h7xx_hal_driver",
+                                              "--version",
+                                              stm32h7xx_hal_driver_pkgver,
+                                              "--pkgs_dir",
+                                              gnb_pkgs_dir,
+                                            ],
+                                            "string")
 }
 
 pkggroup("stm32h7xx_device") {

@@ -1,5 +1,5 @@
 {
-    "name": "arm_none_eabi_gcc",
+    "name": "arm-none-eabi-gcc",
     "type": "binary",
     "versions": [
         {
