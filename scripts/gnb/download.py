@@ -42,7 +42,7 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def download_get_name(url, proxy=None, user_agent=None, timeout=None):
+def download_get_urlname(url, proxy=None, user_agent=None, timeout=None):
     import re
     from urllib.parse import urlparse
 
@@ -50,9 +50,11 @@ def download_get_name(url, proxy=None, user_agent=None, timeout=None):
     if not curl_bin:
         utils.error("`curl` not found")
 
+    null_device = "NUL" if sys.platform.startswith("win") else "/dev/null"
+
     curl_command = [curl_bin, "-I", "-L", "-s"]
     curl_command += ["-w", "%{url_effective}"]
-    curl_command += ["-o", "-"]
+    curl_command += ["-o", null_device]
 
     if proxy:
         curl_command += ["--proxy", proxy]
@@ -63,38 +65,44 @@ def download_get_name(url, proxy=None, user_agent=None, timeout=None):
     if timeout:
         curl_command += ["--max-time", str(timeout)]
 
-    try:
-        ret = subprocess.check_output(curl_command + [url], text=True)
-    except:
-        utils.error(f"curl get header `{url}` failed")
+    ret = subprocess.run(
+        curl_command + [url],
+        stdout=subprocess.PIPE,
+        stderr=sys.stderr,
+        text=True,
+        check=False,
+        encoding="utf-8",
+    )
 
-    for line in ret.split("\n"):
+    if ret.returncode != 0:
+        utils.error(f"curl get url `{url}` failed")
+
+    outstr = ret.stdout.strip()
+    filename = None
+    for line in outstr.split("\n"):
         line = line.strip().lower()
         if line.startswith("content-disposition:"):
             match = re.search(r'filename="?([^";]+)', line)
             if match:
-                return match.group(1).strip()
+                filename = match.group(1).strip()
+                break
 
-    final_url = ret.split("\n")[-1]
-    if final_url.startswith("http"):
-        return os.path.basename(urlparse(final_url).path)
+    finalurl = outstr.split("\n")[0]
 
-    return None
+    return finalurl, filename
 
 
 def download_by_url(url, outdir=os.getcwd(), proxy=None, user_agent=None, timeout=None):
-    filename = download_get_name(url, proxy, user_agent, timeout)
-    if filename == None:
-        utils.error(f"download `{url}` get filename failed")
-
     curl_bin = shutil.which("curl")
     if not curl_bin:
         utils.error("`curl` not found")
 
+    finalurl, filename = download_get_urlname(url, proxy, user_agent, timeout)
+
     curl_command = [curl_bin, "-#", "-L", "-f"]
-    # curl_command += ["--write-out", "%{filename_effective}"]
-    curl_command += ["-o", os.path.join(outdir, filename)]
-    curl_command += ["-C", "-"]
+    curl_command += ["--write-out", "%{filename_effective}"]
+    # curl_command += ["-o", os.path.join(outdir, filename)]
+    # curl_command += ["-C", "-"]
 
     if proxy:
         curl_command += ["--proxy", proxy]
@@ -107,16 +115,27 @@ def download_by_url(url, outdir=os.getcwd(), proxy=None, user_agent=None, timeou
 
     os.makedirs(outdir, exist_ok=True)
 
+    print(finalurl)
     ret = subprocess.run(
-        curl_command + [url],
-        stdout=sys.stdout,
+        curl_command + ["-OJ", finalurl],
+        cwd=outdir,
+        stdout=subprocess.PIPE,
         stderr=sys.stderr,
         text=True,
         check=False,
+        encoding="utf-8",
     )
 
     if ret.returncode != 0:
         utils.error(f"curl download `{url}` failed")
+
+    filename = ret.stdout.strip()
+    if (filename != None) and (not filename in os.listdir(outdir)):
+        shutil.move(
+            os.path.join(outdir, os.listdir(outdir)[0]), os.path.join(outdir, filename)
+        )
+    if filename == None:
+        filename = os.listdir(outdir)[0]
 
     return os.path.abspath(os.path.join(outdir, filename))
 

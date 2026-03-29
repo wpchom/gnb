@@ -1,11 +1,14 @@
 assert(defined(gnb_repo_dir))
-assert(defined(gnb_pkgs_dir))
+
+declare_args() {
+  gnb_pkgs_dir = rebase_path("${gnb_repo_dir}/packages")
+}
 
 declare_args() {
   gnb_which = rebase_path("${gnb_repo_dir}/scripts/which.py")
+  gnb_pkgload = rebase_path("${gnb_repo_dir}/scripts/pkgload.py")
   gnb_pkgexec = rebase_path("${gnb_repo_dir}/scripts/pkgexec.py")
   gnb_pkgcopy = rebase_path("${gnb_repo_dir}/scripts/pkgcopy.py")
-  gnb_pkgload = rebase_path("${gnb_repo_dir}/scripts/pkgload.py")
 }
 
 template("pkggroup") {

@@ -128,7 +128,7 @@ def run_build(
     gn_command += ["--args=%s" % " ".join(buildargs)]
 
     if verbose:
-        gn_command += ["--time"]
+        # gn_command += ["--time"]
         utils.debug(" ".join(gn_command))
 
     # git ignore
@@ -150,12 +150,12 @@ def run_build(
     ninja_bin = utils.check_ninja(pkgs_dir, proxy)
     ninja_command = [ninja_bin, "-C", output]
 
-    if (target != None) and (target != ""):
-        ninja_command += [target]
-
     if verbose:
         ninja_command += ["-v"]
         utils.debug(" ".join(ninja_command))
+
+    if (target != None) and (target != ""):
+        ninja_command += [target]
 
     ret = subprocess.run(
         ninja_command, cwd=output, stdout=sys.stdout, stderr=sys.stderr

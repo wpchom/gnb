@@ -39,7 +39,6 @@ def run_clean(output, pkgs_dir, verbose=False, proxy=None):
     ninja_command = [ninja_bin, "-C", output, "-t", "clean"]
 
     if verbose:
-        ninja_command.append("-v")
         utils.debug(" ".join(ninja_command))
 
     ret = subprocess.run(

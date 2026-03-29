@@ -28,8 +28,9 @@ if (profile_toolchain == "gcc") {
   toolchain_path = exec_script(gnb_pkgload,
                                [
                                  profile_toolchain,
-                                 "--pkgsrc",
+                                 "--pkgs_dir",
                                  gnb_pkgs_dir,
+                                 "--groupath",
                                ],
                                "string")
   import("${toolchain_path}/${profile_toolchain}.gni")

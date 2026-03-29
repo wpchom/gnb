@@ -58,10 +58,11 @@ def main():
             args.pkgs_dir = os.environ.get("GNB_PKGS_DIR")
         else:
             args.pkgs_dir = os.path.join(args.repo_dir, "packages")
+
     if not os.path.exists(args.pkgs_dir):
         utils.error("Package source directory does not exist: " + args.pkgs_dir)
-
-    _action(args)
+    else:
+        _action(args)
 
 
 if __name__ == "__main__":

@@ -96,8 +96,11 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
         utils.error(f"Package [{pkgname}] versions is not defined")
 
     pkgdesc = {"name": pkgname, "version": pkgvers}
-    if (pkgvers == None) or (pkgvers == "latest"):
-        pkgdesc.update(pkgjson["versions"][0])
+    pkgplat = _pkg_package_plat()
+    if (pkgvers == None) or (pkgvers == "latest") or (pkgvers == ""):
+        pkgdesc = pkgjson["versions"][0]
+        pkgdesc["name"] = pkgname
+        pkgvers = pkgdesc["version"]
     else:
         verlist = []
         for verdesc in pkgjson["versions"]:
@@ -110,12 +113,10 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
                 if verdesc["version"] == pkgvers:
                     pkgdesc["version"] = verdesc["version"]
                     break
-        if not "version" in pkgdesc:
-            utils.debug(f"Package [{pkgname}] version: {verlist}")
-            utils.error(f"Version ({pkgvers}) is not exists")
 
-    pkgplat = _pkg_package_plat()
-    pkgvers = pkgdesc["version"]
+    if not "version" in pkgdesc:
+        utils.debug(f"Package [{pkgname}] version: {verlist}")
+        utils.error(f"Version ({pkgvers}) is not exists")
 
     if "url" in pkgdesc:
         if type(pkgdesc["url"]) != dict:
@@ -142,7 +143,7 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
 
 
 def _pkg_pkgtemp_path(pkgs_dir, subdir, pkgname):
-    return os.path.join(pkgs_dir, ".tmp", subdir, pkgname[0], pkgname)
+    return os.path.join(pkgs_dir, ".temp", subdir, pkgname[0], pkgname)
 
 
 def _pkg_download_path(pkgs_dir, pkgdesc):
@@ -524,7 +525,7 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
 
                 _, extension = _pkg_split_extension(pkgpath)
                 if not extension in _EXTRACT_EXTENSIONS:
-                    utils.error(f"Download `{pkgpath}` not support")
+                    utils.error(f"Download `{pkgurl}` not support")
 
                 if ("type" in pkgdesc) and (pkgdesc["type"] in ["binary"]):
                     download_file = os.path.join(

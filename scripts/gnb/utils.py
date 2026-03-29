@@ -40,7 +40,7 @@ def check_gn(pkgs_dir, proxy):
     if gn_bin == None:
         from . import package
 
-        _, gn_dir = package.pkgload(pkgs_dir, "gn", None, proxy, True)
+        _, gn_dir = package.pkgload(pkgs_dir, "gn", None, proxy, False)
         gn_bin = os.path.join(
             gn_dir,
             "gn.exe" if platform.system().lower() == "windows" else "gn",
@@ -61,7 +61,7 @@ def check_ninja(pkgs_dir, proxy):
     if ninja_bin == None:
         from . import package
 
-        _, ninja_dir = package.pkgload(pkgs_dir, "ninja", None, proxy, True)
+        _, ninja_dir = package.pkgload(pkgs_dir, "ninja", None, proxy, False)
         ninja_bin = os.path.join(
             ninja_dir,
             "ninja.exe" if platform.system().lower() == "windows" else "ninja",
