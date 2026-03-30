@@ -1,3 +1,5 @@
+set_defaultplat("corss")
+
 target("cmsis", function()
     set_kind("headeronly")
 

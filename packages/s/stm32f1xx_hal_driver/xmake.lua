@@ -13,16 +13,19 @@ package("stm32f1xx_hal_driver", function()
     add_versions("tarball:1.1.10", "dac985f582b763e8a54aee8329fc7cc86e5690d4ed97f48f7bb7a89eb23f94ca")
     add_versions("zipball:1.1.10", "76fe7723907f429e5518ab4a3b40c89a10b065504eb6f20b0f6a5cebe741d3da")
 
-    add_deps("stm32f1xx_device")
+    add_deps("stm32f1xx_device", { public = true })
 
     add_configs("confdir", {
         default = nil
     })
 
-    set_policy("package.keep_source", true)
+    on_load(function(package)
+        package:add("includedirs", package:config("confdir"))
+    end)
+
+    -- set_policy("package.keep_source", true)
     -- set_policy("package.install_always", true)
     on_install(function(package)
-        -- os.cp(path.join(os.scriptdir(), "startup"), "Startup")
         os.cp(path.join(os.scriptdir(), "stm32f1xx_hal_driver.lua"), "xmake.lua")
 
         local configs = {
@@ -30,7 +33,5 @@ package("stm32f1xx_hal_driver", function()
         }
         local xmake = import("package.tools.xmake")
         xmake.install(package, configs)
-
-        package:add("defines", configs.device)
     end)
 end)

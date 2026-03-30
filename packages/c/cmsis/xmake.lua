@@ -14,9 +14,11 @@ package("cmsis", function()
 
     add_versions("zipball:6.3.0", "e09a9d795c5064a8c9bf64245d72bc4a03c54907d485bc02fa75c09fb4b808ce")
 
+    -- set_policy("package.keep_source", true)
     -- set_policy("package.install_always", true)
     on_install(function(package)
         os.cp(path.join(os.scriptdir(), "cmsis.lua"), "xmake.lua")
+
         local xmake = import("package.tools.xmake")
         xmake.install(package)
     end)
