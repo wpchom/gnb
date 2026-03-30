@@ -1,12 +1,12 @@
 declare_args() {
-  gnb_repo_dir = getenv("GNB_REPO_DIR")
+  gnb_build_dir = rebase_path(getenv("MDS_REPO_DIR") + "/gnbuild")
 }
 
 # package
-import("${gnb_repo_dir}/gnbuild/package.gni")
+import("${gnb_build_dir}/package.gni")
 
 # toolchain
-import("${gnb_repo_dir}/gnbuild/toolchain.gni")
+import("${gnb_build_dir}/toolchain.gni")
 
 # default
 target_os = host_os

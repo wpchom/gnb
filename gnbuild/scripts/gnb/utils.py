@@ -9,9 +9,9 @@ sys.dont_write_bytecode = True
 import shutil
 import platform
 
-GNB_REPO_GIT = "https://github.com/wpchom/gnb.git"
-GNB_REPO_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+MDS_REPO_GIT = "https://github.com/wpchom/mds_repo.git"
+MDS_REPO_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
 
@@ -79,8 +79,8 @@ def check_ninja(pkgs_dir, proxy):
 def update(args):
     import subprocess
 
-    if not ".git" in os.listdir(GNB_REPO_DIR):
-        error(f"`{GNB_REPO_DIR}` is not a git repository")
+    if not ".git" in os.listdir(MDS_REPO_DIR):
+        error(f"`{MDS_REPO_DIR}` is not a git repository")
 
     git_bin = shutil.which("git")
     if git_bin == None:
@@ -88,11 +88,11 @@ def update(args):
     else:
         try:
             subprocess.run(
-                [git_bin, "-C", GNB_REPO_DIR, "pull"],
-                cwd=GNB_REPO_DIR,
+                [git_bin, "-C", MDS_REPO_DIR, "pull"],
+                cwd=MDS_REPO_DIR,
                 stdout=sys.stdout,
                 stderr=sys.stderr,
                 check=True,
             )
         except Exception as e:
-            error(f"`git -C {GNB_REPO_DIR} pull` failed", f"\n{str(e)}")
+            error(f"`git -C {MDS_REPO_DIR} pull` failed", f"\n{str(e)}")

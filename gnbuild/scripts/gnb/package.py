@@ -143,7 +143,8 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
 
 
 def _pkg_pkgtemp_path(pkgs_dir, subdir, pkgname):
-    return os.path.join(pkgs_dir, ".temp", subdir, pkgname[0], pkgname)
+    return os.path.join(os.path.expanduser("~"), ".gnbuild", subdir, pkgname[0], pkgname)
+    # return os.path.join(pkgs_dir, ".temp", subdir, pkgname[0], pkgname)
 
 
 def _pkg_download_path(pkgs_dir, pkgdesc):
@@ -205,8 +206,6 @@ Package [pkgname] list:
 def _pkg_clean_remove(pkgs_dir, pkgdesc, clean=False, remove=False):
     if (clean == False) and (remove == False):
         return (False, False)
-
-    pkgvers = pkgdesc["version"]
 
     buildout_dir = _pkg_buildout_path(pkgs_dir, pkgdesc)
     resource_dir = _pkg_resource_path(pkgs_dir, pkgdesc)

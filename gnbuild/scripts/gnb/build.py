@@ -141,7 +141,7 @@ def run_build(
         cwd=builddir,
         stdout=sys.stdout,
         stderr=sys.stderr,
-        env={**os.environ, "GNB_REPO_DIR": repo_dir},
+        env={**os.environ, "MDS_REPO_DIR": repo_dir},
     )
     if ret.returncode != 0:
         utils.error(" ".join(gn_command))

@@ -51,11 +51,11 @@ def _action(args):
 def main():
     args = _parser()
 
-    args.repo_dir = utils.GNB_REPO_DIR
+    args.repo_dir = utils.MDS_REPO_DIR
 
     if args.pkgs_dir == None:
-        if os.environ.get("GNB_PKGS_DIR") != None:
-            args.pkgs_dir = os.environ.get("GNB_PKGS_DIR")
+        if os.environ.get("MDS_REPO_DIR") != None:
+            args.pkgs_dir = os.environ.get("MDS_REPO_DIR")
         else:
             args.pkgs_dir = os.path.join(args.repo_dir, "packages")
 
