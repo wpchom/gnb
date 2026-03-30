@@ -3,8 +3,12 @@
     "versions": [
         {
             "version": "1.11.5",
-            "url": "https://github.com/STMicroelectronics/stm32h7xx-hal-driver/archive/refs/tags/v{version}.tar.gz",
-            "dir": "stm32h7xx-hal-driver-{version}"
+            "url": {
+                "*": "https://github.com/STMicroelectronics/stm32h7xx-hal-driver/archive/refs/tags/v{version}.tar.gz"
+            },
+            "dir": {
+                "*": "stm32h7xx-hal-driver-{version}"
+            }
         }
     ]
 }

@@ -1,23 +1,28 @@
 declare_args() {
-  littlefs_pkgver = "latest"
+  littlefs_pkgver = ""
+  littlefs_pkgsrc = ""
 
-  # littlefs configuration
-  littlefs_config_file = ""
+  littlefs_pkgcfg = {
+    cfgfile = ""
 
-  littlefs_max_name_size = 255
-  littlefs_max_file_size = 2147483647
-  littlefs_max_attr_size = 1022
+    max_name_size = 255
+    max_file_size = 2147483647
+    max_attr_size = 1022
 
-  littlefs_readonly_enable = false
-  littlefs_migrate_enable = false
+    readonly_enable = false
+    migrate_enable = false
+  }
 }
 
-declare_args() {
+if (littlefs_pkgsrc != "") {
+  littlefs_pkgdir = littlefs_pkgsrc
+} else {
   littlefs_pkgdir = exec_script(gnb_pkgload,
                                 [
-                                  "--download",
-                                  "littlefs:${littlefs_pkgver}",
-                                  "--pkgsrc",
+                                  "littlefs",
+                                  "--version",
+                                  littlefs_pkgver,
+                                  "--pkgs_dir",
                                   gnb_pkgs_dir,
                                 ],
                                 "string")
@@ -33,9 +38,9 @@ config("littlefs_cfg") {
     "LFS_NO_DEBUG=1",
     "LFS_NO_WARN=1",
     "LFS_NO_ERROR=1",
-    "LFS_NAME_MAX=${littlefs_max_name_size}",
-    "LFS_FILE_MAX=${littlefs_max_file_size}",
-    "LFS_ATTR_MAX=${littlefs_max_attr_size}",
+    "LFS_NAME_MAX=${littlefs_pkgcfg.max_name_size}",
+    "LFS_FILE_MAX=${littlefs_pkgcfg.max_file_size}",
+    "LFS_ATTR_MAX=${littlefs_pkgcfg.max_attr_size}",
   ]
 
   if (defined(littlefs_readonly_enable) && littlefs_readonly_enable) {
@@ -46,8 +51,8 @@ config("littlefs_cfg") {
     defines += [ "LFS_MIGRATE=1" ]
   }
 
-  if (defined(littlefs_config_file) && littlefs_config_file != "") {
-    defines += [ "LFS_CONFIG=\"${littlefs_config_file}\"" ]
+  if (defined(littlefs_pkgcfg.cfgfile)) {
+    defines += [ "LFS_CONFIG=\"${littlefs_pkgcfg.cfgfile}\"" ]
   }
 }
 

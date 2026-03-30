@@ -3,8 +3,9 @@
     "versions": [
         {
             "version": "release/25.12.00",
-            "url": "https://github.com/nxp-mcuxpresso/mcux-devices-rt.git",
-            "dir": ""
+            "url": {
+                "*": "https://github.com/nxp-mcuxpresso/mcux-devices-rt.git"
+            }
         }
     ]
 }

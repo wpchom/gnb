@@ -1,4 +1,4 @@
-assert(defined(gnb_repo_dir))
+assert(defined(gnb_build_dir))
 
 declare_args() {
   if (host_os == "mac") {
@@ -11,14 +11,14 @@ declare_args() {
 set_default_toolchain("//:${profile_toolchain}")
 
 if (profile_toolchain == "gcc") {
-  import("${gnb_repo_dir}/gnbuild/toolchains/gcc_toolchain.gni")
+  import("${gnb_build_dir}/toolchains/gcc_toolchain.gni")
   template("declare_toolchain") {
     not_needed(invoker, "*")
     gcc_toolchain(target_name) {
     }
   }
 } else if (profile_toolchain == "clang") {
-  import("${gnb_repo_dir}/gnbuild/toolchains/clang_toolchain.gni")
+  import("${gnb_build_dir}/toolchains/clang_toolchain.gni")
   template("declare_toolchain") {
     not_needed(invoker, "*")
     clang_toolchain(target_name) {
@@ -28,8 +28,9 @@ if (profile_toolchain == "gcc") {
   toolchain_path = exec_script(gnb_pkgload,
                                [
                                  profile_toolchain,
-                                 "--pkgsrc",
+                                 "--pkgs_dir",
                                  gnb_pkgs_dir,
+                                 "--groupath",
                                ],
                                "string")
   import("${toolchain_path}/${profile_toolchain}.gni")

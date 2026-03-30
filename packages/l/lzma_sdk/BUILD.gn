@@ -1,14 +1,20 @@
 declare_args() {
-  lzma_sdk_pkgver = "latest"
-  # config
+  lzma_sdk_pkgver = ""
+  lzma_sdk_pkgsrc = ""
+
+  lzma_sdk_pkgcfg = {
+  }
 }
 
-declare_args() {
+if (lzma_sdk_pkgsrc != "") {
+  lzma_sdk_pkgdir = lzma_sdk_pkgsrc
+} else {
   lzma_sdk_pkgdir = exec_script(gnb_pkgload,
                                 [
-                                  "--download",
-                                  "lzma_sdk:${lzma_sdk_pkgver}",
-                                  "--pkgsrc",
+                                  "lzma_sdk",
+                                  "--version",
+                                  lzma_sdk_pkgver,
+                                  "--pkgs_dir",
                                   gnb_pkgs_dir,
                                 ],
                                 "string")

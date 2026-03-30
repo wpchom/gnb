@@ -4,8 +4,12 @@
     "versions": [
         {
             "version": "2.11.2",
-            "url": "https://github.com/littlefs-project/littlefs/archive/refs/tags/v{version}.tar.gz",
-            "dir": "littlefs-{version}"
+            "url": {
+                "*": "https://github.com/littlefs-project/littlefs/archive/refs/tags/v{version}.tar.gz"
+            },
+            "dir": {
+                "*": "littlefs-{version}"
+            }
         }
     ]
 }

@@ -1,4 +1,4 @@
-buildconfig = getenv("GNB_REPO_DIR") + "/gnbuild/BUILDCONFIG.gn"
+buildconfig = getenv("MDS_REPO_DIR") + "gnbuild/BUILDCONFIG.gn"
 script_executable = "python3"
 
 export_compile_commands = [ "*" ]

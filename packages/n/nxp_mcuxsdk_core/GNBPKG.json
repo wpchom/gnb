@@ -3,8 +3,9 @@
     "versions": [
         {
             "version": "release/25.12.00",
-            "url": "https://github.com/nxp-mcuxpresso/mcuxsdk-core.git",
-            "dir": ""
+            "url": {
+                "*": "https://github.com/nxp-mcuxpresso/mcuxsdk-core.git"
+            }
         }
     ]
 }

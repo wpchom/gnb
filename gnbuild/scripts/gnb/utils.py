@@ -6,14 +6,12 @@ import sys
 
 sys.dont_write_bytecode = True
 
-import shutil, platform
-from . import package
+import shutil
+import platform
 
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
-
-GNB_REPO_GIT = "https://github.com/wpchom/gnb.git"
-GNB_REPO_DIR = os.path.dirname(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+MDS_REPO_GIT = "https://github.com/wpchom/mds_repo.git"
+MDS_REPO_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 )
 
 
@@ -40,12 +38,14 @@ def check_gn(pkgs_dir, proxy):
     gn_bin = shutil.which("gn")
 
     if gn_bin == None:
-        _, gn_dir = package.package_download("gn", "latest", pkgs_dir, proxy)
+        from . import package
+
+        _, gn_dir = package.pkgload(pkgs_dir, "gn", None, proxy, False)
         gn_bin = os.path.join(
             gn_dir,
             "gn.exe" if platform.system().lower() == "windows" else "gn",
         )
-        
+
     if os.path.exists(gn_bin) and platform.system().lower() in ["linux", "darwin"]:
         try:
             os.chmod(gn_bin, 0o755)
@@ -59,7 +59,9 @@ def check_ninja(pkgs_dir, proxy):
     ninja_bin = shutil.which("ninja")
 
     if ninja_bin == None:
-        _, ninja_dir = package.package_download("ninja", "latest", pkgs_dir, proxy)
+        from . import package
+
+        _, ninja_dir = package.pkgload(pkgs_dir, "ninja", None, proxy, False)
         ninja_bin = os.path.join(
             ninja_dir,
             "ninja.exe" if platform.system().lower() == "windows" else "ninja",
@@ -74,11 +76,11 @@ def check_ninja(pkgs_dir, proxy):
     return ninja_bin
 
 
-def update_self():
+def update(args):
     import subprocess
 
-    if not ".git" in os.listdir(GNB_REPO_DIR):
-        error(f"`{GNB_REPO_DIR}` is not a git repository")
+    if not ".git" in os.listdir(MDS_REPO_DIR):
+        error(f"`{MDS_REPO_DIR}` is not a git repository")
 
     git_bin = shutil.which("git")
     if git_bin == None:
@@ -86,7 +88,11 @@ def update_self():
     else:
         try:
             subprocess.run(
-                [git_bin, "-C", GNB_REPO_DIR, "pull"], cwd=GNB_REPO_DIR, check=True
+                [git_bin, "-C", MDS_REPO_DIR, "pull"],
+                cwd=MDS_REPO_DIR,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
+                check=True,
             )
         except Exception as e:
-            error(f"`git -C {GNB_REPO_DIR} pull` failed", f"\n{str(e)}")
+            error(f"`git -C {MDS_REPO_DIR} pull` failed", f"\n{str(e)}")

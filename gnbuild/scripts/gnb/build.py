@@ -6,11 +6,20 @@ import sys
 
 sys.dont_write_bytecode = True
 
-from . import utils, clean
+import subprocess
+from . import utils
 
 
 def _parser_arguments(parser):
     parser.add_argument("target", nargs="?", default=None, help="target to build")
+
+    parser.add_argument(
+        "-x", "--proxy", default=os.getenv("GNB_PROXY"), help="download proxy"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", default=False, help="print verbose"
+    )
+
     parser.add_argument(
         "-b", "--builddir", default=None, help="build root directory for gn"
     )
@@ -18,21 +27,10 @@ def _parser_arguments(parser):
         "-p", "--profile", default=None, help="build profile of project for gn"
     )
     parser.add_argument(
-        "-o", "--outdir", default=None, help="build output directory for gn"
-    )
-
-    parser.add_argument(
-        "-c",
-        "--clean",
-        action="store_true",
-        default=False,
-        help="clean outdir before build",
+        "-o", "--output", default=None, help="build output directory for gn"
     )
     parser.add_argument(
-        "-x",
-        "--proxy",
-        default=os.getenv("GNB_PROXY"),
-        help="proxy server, default getenv GNB_PROXY",
+        "-c", "--clean", action="store_true", default=False, help="clean before build"
     )
 
     parser.add_argument("--args", action="append", default=[], help="gn gen with args")
@@ -67,6 +65,8 @@ def get_profile(repo_dir, builddir, profile, default="debug.gn"):
 
 
 def action(args):
+    from . import clean
+
     if ("builddir" in args) and (args.builddir != None):
         args.builddir = os.path.abspath(args.builddir)
     else:
@@ -74,85 +74,92 @@ def action(args):
 
     args.profile = get_profile(args.repo_dir, args.builddir, args.profile)
 
-    if ("outdir" in args) and (args.outdir != None):
-        args.outdir = os.path.abspath(args.outdir)
+    if ("output" in args) and (args.output != None):
+        args.output = os.path.abspath(args.output)
     else:
-        args.outdir = os.path.join(
-            os.getcwd(), "outdir", os.path.splitext(os.path.basename(args.profile))[0]
+        args.output = os.path.join(
+            os.getcwd(), "output", os.path.splitext(os.path.basename(args.profile))[0]
         )
 
     if not "args" in args:
         args.args = []
 
-    if ("clean" in args) and args.clean:
-        clean.clean_action(args.outdir, args.pkgs_dir, args.proxy, args.verbose)
+    if args.verbose:
+        utils.debug(args)
 
-    build_action(
+    if ("clean" in args) and args.clean:
+        clean.run_clean(args.output, args.pkgs_dir, args.verbose, args.proxy)
+
+    run_build(
         args.builddir,
         args.profile,
-        args.outdir,
+        args.output,
         args.args,
         args.repo_dir,
         args.pkgs_dir,
-        args.proxy,
         args.verbose,
-        args.target if ("target" in args) and (args.target != "") else None,
+        args.proxy,
+        args.target,
     )
 
 
-def build_action(
+def run_build(
     builddir,
     profile,
-    outdir,
+    output,
     buildargs,
     repo_dir,
     pkgs_dir,
-    proxy,
-    verbose,
+    verbose=False,
+    proxy=None,
     target=None,
 ):
-    import time, subprocess
+    import time
 
     stime = time.perf_counter()
     utils.info(f"Building action start `{builddir}` with `{profile}`")
 
     # gn gen
     gn_bin = utils.check_gn(pkgs_dir, proxy)
-    gn_command = [gn_bin, "gen", outdir, "--export-compile-commands"]
+    gn_command = [gn_bin, "gen", output, "--export-compile-commands"]
     gn_command += ["--root=%s" % builddir, "--dotfile=%s" % profile]
 
     buildargs = [f'gnb_pkgs_dir="{pkgs_dir}"'] + (buildargs if buildargs else [])
     gn_command += ["--args=%s" % " ".join(buildargs)]
 
     if verbose:
+        # gn_command += ["--time"]
         utils.debug(" ".join(gn_command))
 
     # git ignore
-    os.makedirs(outdir, exist_ok=True)
-    with open(os.path.join(outdir, ".gitignore"), "w+") as f:
+    os.makedirs(output, exist_ok=True)
+    with open(os.path.join(output, ".gitignore"), "w+") as f:
         f.write("*\n")
 
     ret = subprocess.run(
         gn_command,
         cwd=builddir,
-        check=False,
-        env={**os.environ, "GNB_REPO_DIR": repo_dir},
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        env={**os.environ, "MDS_REPO_DIR": repo_dir},
     )
     if ret.returncode != 0:
         utils.error(" ".join(gn_command))
 
     # ninja build
     ninja_bin = utils.check_ninja(pkgs_dir, proxy)
-    ninja_command = [ninja_bin, "-C", outdir]
-
-    if (target != None) and (target != ""):
-        ninja_command += [target]
+    ninja_command = [ninja_bin, "-C", output]
 
     if verbose:
         ninja_command += ["-v"]
         utils.debug(" ".join(ninja_command))
 
-    ret = subprocess.run(ninja_command, cwd=outdir, check=False)
+    if (target != None) and (target != ""):
+        ninja_command += [target]
+
+    ret = subprocess.run(
+        ninja_command, cwd=output, stdout=sys.stdout, stderr=sys.stderr
+    )
 
     # complete
     etime = time.perf_counter()

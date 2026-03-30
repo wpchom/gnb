@@ -4,8 +4,12 @@
     "versions": [
         {
             "version": "1.4.0",
-            "url": "https://www.gd32mcu.com/data/documents/toolSoftware/GD32H7xx_Firmware_Library_V{version}.7z",
-            "dir": "GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/Firmware"
+            "url": {
+                "*": "https://www.gd32mcu.com/data/documents/toolSoftware/GD32H7xx_Firmware_Library_V{version}.7z"
+            },
+            "dir": {
+                "*": "GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/Firmware"
+            }
         }
     ]
 }

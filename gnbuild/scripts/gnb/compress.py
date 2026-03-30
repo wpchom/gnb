@@ -11,6 +11,10 @@ from . import utils
 
 
 def _parser_arguments(parser):
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", default=False, help="print verbose"
+    )
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-c", "--compress", action="store_true", help="compress")
     group.add_argument("-d", "--decompress", action="store_true", help="decompress")
@@ -18,6 +22,7 @@ def _parser_arguments(parser):
     parser.add_argument(
         "-f", "--force", action="store_true", default=False, help="force"
     )
+
     parser.add_argument("inpath", help="input path")
     parser.add_argument("outpath", help="output path")
 
@@ -29,11 +34,11 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def compress(input_path, output_file, force):
+def compress(input_path, output_file, force=False):
     utils.error("Compress not implemented")
 
 
-def decompress(input_file, output_path, force):
+def decompress(input_file, output_path, force=False):
     if output_path == None:
         output_path = os.path.dirname(input_file)
 
@@ -83,7 +88,7 @@ def _decompress_archive(input_file, output_path):
         import subprocess
 
         p7z_command = [p7z, "x", input_file, "-o" + output_path]
-        ret = subprocess.run(p7z_command, capture_output=True, check=False)
+        ret = subprocess.run(p7z_command, stdout=sys.stdout, stderr=sys.stderr)
         if ret.returncode != 0:
             utils.error("7z decompress failed")
 
@@ -115,6 +120,9 @@ def _decompress_archive(input_file, output_path):
 
 
 def action(args):
+    if args.verbose:
+        utils.debug(args)
+
     if args.decompress:
         decompress(args.inpath, args.outpath, args.force)
     elif args.compress:

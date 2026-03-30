@@ -1,23 +1,24 @@
 declare_args() {
-  stm32f1xx_device_pkgver = "latest"
+  stm32f1xx_device_pkgver = ""
+  stm32f1xx_device_pkgsrc = ""
 
-  # config
-  stm32f1xx_device_devdef = ""
+  stm32f1xx_device_pkgcfg = {
+    # device
+  }
 }
 
-declare_args() {
-  stm32f1xx_device_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "stm32f1xx_device:${stm32f1xx_device_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
-}
-
-declare_toolchain(profile_toolchain) {
+if (stm32f1xx_device_pkgsrc != "") {
+  stm32f1xx_device_pkgdir = stm32f1xx_device_pkgsrc
+} else {
+  stm32f1xx_device_pkgdir = exec_script(gnb_pkgload,
+                                        [
+                                          "stm32f1xx_device",
+                                          "--version",
+                                          stm32f1xx_device_pkgver,
+                                          "--pkgs_dir",
+                                          gnb_pkgs_dir,
+                                        ],
+                                        "string")
 }
 
 pkggroup("cmsis") {
@@ -27,15 +28,22 @@ pkggroup("cmsis") {
 config("stm32f1xx_device_cfg") {
   include_dirs = [ "${stm32f1xx_device_pkgdir}/Include" ]
 
-  if (defined(stm32f1xx_device_devdef) && stm32f1xx_device_devdef != "") {
-    defines = [ "${stm32f1xx_device_devdef}" ]
-  } else {
-    assert(false, "`stm32f1xx_device_devdef` must be set")
+  if (defined(stm32f1xx_device_pkgcfg.device)) {
+    defines = [ "${stm32f1xx_device_pkgcfg.device}" ]
   }
 }
 
 source_set("system_stm32f1xx") {
   sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  if (!defined(stm32f1xx_device_pkgcfg.device)) {
+    assert(false, "`stm32f1xx_device_pkgcfg.device` must be set")
+  }
+
+  if (stm32f1xx_device_pkgcfg.device == "STM32F103xB") {
+    sources += [ "startup/startup_stm32f103xb.c" ]
+  } else {
+  }
 
   public_configs = [ ":stm32f1xx_device_cfg" ]
 

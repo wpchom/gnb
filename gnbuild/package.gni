@@ -1,39 +1,42 @@
-assert(defined(gnb_repo_dir))
+assert(defined(gnb_build_dir))
 
 declare_args() {
-  gnb_which = rebase_path("${gnb_repo_dir}/scripts/which.py")
-  gnb_pkgexec = rebase_path("${gnb_repo_dir}/scripts/pkgexec.py")
-  gnb_pkgcopy = rebase_path("${gnb_repo_dir}/scripts/pkgcopy.py")
-  gnb_pkgload = rebase_path("${gnb_repo_dir}/scripts/pkgload.py")
+  gnb_pkgs_dir = rebase_path("${gnb_build_dir}/../packages")
+}
 
-  gnb_pkgs_dir = rebase_path("${gnb_repo_dir}/packages")
+declare_args() {
+  gnb_which = rebase_path("${gnb_build_dir}/scripts/which.py")
+  gnb_pkgload = rebase_path("${gnb_build_dir}/scripts/pkgload.py")
+  gnb_pkgexec = rebase_path("${gnb_build_dir}/scripts/pkgexec.py")
+  gnb_pkgcopy = rebase_path("${gnb_build_dir}/scripts/pkgcopy.py")
 }
 
 template("pkggroup") {
   not_needed(invoker, "*")
 
   group(target_name) {
-    pkg_path = exec_script(gnb_pkgload,
-                           [
-                             target_name,
-                             "--pkgsrc",
-                             gnb_pkgs_dir,
-                           ],
-                           "string")
+    pkgpath = exec_script(gnb_pkgload,
+                          [
+                            target_name,
+                            "--pkgs_dir",
+                            gnb_pkgs_dir,
+                            "--groupath",
+                          ],
+                          "string")
 
     public_deps = []
     if (defined(invoker.deps)) {
       foreach(dep, invoker.deps) {
-        public_deps += [ "${pkg_path}/:${dep}" ]
+        public_deps += [ "${pkgpath}/:${dep}" ]
       }
     } else {
-      public_deps += [ "${pkg_path}/:default" ]
+      public_deps += [ "${pkgpath}/:default" ]
     }
 
     public_configs = []
     if (defined(invoker.configs)) {
       foreach(cfg, invoker.configs) {
-        public_configs += [ "${pkg_path}/:${cfg}" ]
+        public_configs += [ "${pkgpath}/:${cfg}" ]
       }
     }
   }

@@ -1,23 +1,24 @@
 declare_args() {
-  stm32h7xx_device_pkgver = "latest"
+  stm32h7xx_device_pkgver = ""
+  stm32h7xx_device_pkgsrc = ""
 
-  # config
-  stm32h7xx_device_devdef = ""
+  stm32h7xx_device_pkgcfg = {
+    # device_def
+  }
 }
 
-declare_args() {
-  stm32h7xx_device_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "stm32h7xx_device:${stm32h7xx_device_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
-}
-
-declare_toolchain(profile_toolchain) {
+if (stm32h7xx_device_pkgsrc != "") {
+  stm32h7xx_device_pkgdir = stm32h7xx_device_pkgsrc
+} else {
+  stm32h7xx_device_pkgdir = exec_script(gnb_pkgload,
+                                        [
+                                          "stm32h7xx_device",
+                                          "--version",
+                                          stm32h7xx_device_pkgver,
+                                          "--pkgs_dir",
+                                          gnb_pkgs_dir,
+                                        ],
+                                        "string")
 }
 
 pkggroup("cmsis") {
@@ -27,10 +28,10 @@ pkggroup("cmsis") {
 config("stm32h7xx_device_cfg") {
   include_dirs = [ "${stm32h7xx_device_pkgdir}/Include" ]
 
-  if (defined(stm32h7xx_device_devdef) && stm32h7xx_device_devdef != "") {
-    defines = [ "${stm32h7xx_device_devdef}" ]
+  if (defined(stm32h7xx_device_pkgcfg.device_def)) {
+    defines = [ "${stm32h7xx_device_pkgcfg.device_def}" ]
   } else {
-    assert(false, "`stm32h7xx_device_devdef` must be set")
+    assert(false, "`stm32h7xx_device_pkgcfg.device_def` must be set")
   }
 }
 

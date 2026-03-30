@@ -2,9 +2,23 @@
     "name": "cmsis",
     "versions": [
         {
-            "version": "6.2.0",
-            "url": "https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v{version}.tar.gz",
-            "dir": "CMSIS_6-{version}/CMSIS"
+            "version": "6.3.0",
+            "url": {
+                "*": "https://github.com/ARM-software/CMSIS_6/archive/refs/tags/v{version}.tar.gz",
+                "_": "https://codeload.github.com/ARM-software/CMSIS_6/legacy.tar.gz/refs/tags/v{version}"
+            },
+            "dir": {
+                "*": "CMSIS_6-{version}/CMSIS"
+            }
+        },
+        {
+            "version": "6.2.0"
+        },
+        {
+            "version": "6.1.0"
+        },
+        {
+            "version": "6.0.0"
         }
     ]
 }

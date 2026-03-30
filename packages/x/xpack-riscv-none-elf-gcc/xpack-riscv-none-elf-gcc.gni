@@ -1,6 +1,9 @@
 declare_args() {
-  arm_none_eabi_gcc_pkgver = "latest"
+  riscv_none_elf_gcc_pkgver = ""
+  riscv_none_elf_gcc_pkgsrc = ""
+}
 
+declare_args() {
   profile_common_flags = [
     "-fdiagnostics-color=always",
     "-fmessage-length=0",
@@ -15,19 +18,21 @@ declare_args() {
   profile_ldflags = []
 }
 
-declare_args() {
-  arm_none_eabi_gcc_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "arm_none_eabi_gcc:${arm_none_eabi_gcc_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
+if (riscv_none_elf_gcc_pkgsrc != "") {
+  riscv_none_elf_gcc_pkgdir = riscv_none_elf_gcc_pkgsrc
+} else {
+  riscv_none_elf_gcc_pkgdir = exec_script(gnb_pkgload,
+                                          [
+                                            "xpack-riscv-none-elf-gcc",
+                                            "--version",
+                                            riscv_none_elf_gcc_pkgver,
+                                            "--pkgs_dir",
+                                            gnb_pkgs_dir,
+                                          ],
+                                          "string")
 }
 
-template("arm_none_eabi_gcc") {
+template("riscv_none_elf_toolchain") {
   not_needed(invoker, "*")
 
   toolchain(target_name) {
@@ -62,12 +67,12 @@ template("arm_none_eabi_gcc") {
       solink = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
       link = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
     } else {
-      asm = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
-      cc = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
-      cxx = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
-      alink = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
-      solink = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
-      link = "${arm_none_eabi_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      asm = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cc = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cxx = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      alink = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
+      solink = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      link = "${riscv_none_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
     }
 
     toolchain_asmflags = profile_common_flags + profile_asmflags
@@ -207,7 +212,7 @@ template("arm_none_eabi_gcc") {
 
     tool("stamp") {
       if (host_os == "win") {
-        command = "type nul > {{output}}"
+        command = "cmd /c type nul > {{output}}"
       } else {
         command = "touch {{output}}"
       }
@@ -216,7 +221,7 @@ template("arm_none_eabi_gcc") {
 
     tool("copy") {
       if (host_os == "win") {
-        command = "xcopy /Y  {{source}} {{output}}"
+        command = "cmd /c copy /Y {{source}} {{output}}"
       } else {
         command = "cp -af {{source}} {{output}}"
       }
@@ -225,7 +230,7 @@ template("arm_none_eabi_gcc") {
   }
 }
 
-template("arm_none_eabi_action") {
+template("toolchain_action") {
   action(target_name) {
     assert(invoker.script != "")
     forward_variables_from(invoker,
@@ -244,9 +249,9 @@ template("arm_none_eabi_action") {
       script_bin = invoker.script
     }
 
-    args += [ rebase_path("arm-none-eabi-" + script_bin,
+    args += [ rebase_path("riscv-none-elf-" + script_bin,
                           "",
-                          "${arm_none_eabi_gcc_pkgdir}/bin") ]
+                          "${riscv_none_elf_gcc_pkgdir}/bin") ]
 
     if (defined(invoker.args)) {
       args += invoker.args
@@ -256,6 +261,6 @@ template("arm_none_eabi_action") {
 
 template("declare_toolchain") {
   not_needed(invoker, "*")
-  arm_none_eabi_gcc(target_name) {
+  riscv_none_elf_toolchain(target_name) {
   }
 }

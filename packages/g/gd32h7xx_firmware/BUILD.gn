@@ -1,24 +1,25 @@
 declare_args() {
-  gd32h7xx_firmware_pkgver = "latest"
+  gd32h7xx_firmware_pkgver = ""
+  gd32h7xx_firmware_pkgsrc = ""
 
-  # config
-  gd32h7xx_hxtal_value = 25000000
-  gd32h7xx_system_clock = "__SYSTEM_CLOCK_IRC64M"
+  gd32h7xx_firmware_pkgcfg = {
+    hxtal_value = 25000000
+    system_clock = "__SYSTEM_CLOCK_IRC64M"
+  }
 }
 
-declare_args() {
-  gd32h7xx_firmware_pkgdir =
-      exec_script(gnb_pkgload,
-                  [
-                    "--download",
-                    "gd32h7xx_firmware:${gd32h7xx_firmware_pkgver}",
-                    "--pkgsrc",
-                    gnb_pkgs_dir,
-                  ],
-                  "string")
-}
-
-declare_toolchain(profile_toolchain) {
+if (gd32h7xx_firmware_pkgsrc != "") {
+  gd32h7xx_firmware_pkgdir = gd32h7xx_firmware_pkgsrc
+} else {
+  gd32h7xx_firmware_pkgdir = exec_script(gnb_pkgload,
+                                         [
+                                           "gd32h7xx_firmware",
+                                           "--version",
+                                           gd32h7xx_firmware_pkgver,
+                                           "--pkgs_dir",
+                                           gnb_pkgs_dir,
+                                         ],
+                                         "string")
 }
 
 pkggroup("cmsis") {
@@ -34,8 +35,8 @@ config("gd32h7xx_firmware_cfg") {
 
   defines = [ "GD32H7XX" ]
 
-  if (defined(gd32h7xx_hxtal_value) && gd32h7xx_hxtal_value > 0) {
-    defines += [ "HXTAL_VALUE=${gd32h7xx_hxtal_value}" ]
+  if (defined(gd32h7xx_firmware_pkgcfg.hxtal_value)) {
+    defines += [ "HXTAL_VALUE=${gd32h7xx_firmware_pkgcfg.hxtal_value}" ]
   }
 }
 
@@ -47,8 +48,8 @@ static_library("gd32h7xx_firmware") {
 
   defines = []
 
-  if (defined(gd32h7xx_system_clock) && gd32h7xx_system_clock != "") {
-    defines += [ "${gd32h7xx_system_clock}" ]
+  if (defined(gd32h7xx_firmware_pkgcfg.system_clock)) {
+    defines += [ "${gd32h7xx_firmware_pkgcfg.system_clock}" ]
   }
 
   public_configs = [ ":gd32h7xx_firmware_cfg" ]

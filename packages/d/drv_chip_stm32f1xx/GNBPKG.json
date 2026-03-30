@@ -3,8 +3,9 @@
     "versions": [
         {
             "version": "master",
-            "url": "https://github.com/wpchom/drv_chip_stm32f1xx.git",
-            "dir": ""
+            "url": {
+                "*": "https://github.com/wpchom/drv_chip_stm32f1xx.git"
+            }
         }
     ]
 }

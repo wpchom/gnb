@@ -1,21 +1,24 @@
 declare_args() {
-  mds_pkgver = "latest"
-  mds_pkgpth = ""
+  mds_pkgver = ""
+  mds_pkgsrc = ""
+
+  mds_pkgcfg = {
+    cfgfile = ""
+  }
 }
 
-declare_args() {
-  if (mds_pkgpth == "") {
-    mds_pkgdir = exec_script(gnb_pkgload,
-                             [
-                               "--download",
-                               "mds:${mds_pkgver}",
-                               "--pkgsrc",
-                               gnb_pkgs_dir,
-                             ],
-                             "string")
-  } else {
-    mds_pkgdir = mds_pkgpth
-  }
+if (mds_pkgsrc != "") {
+  mds_pkgdir = mds_pkgsrc
+} else {
+  mds_pkgdir = exec_script(gnb_pkgload,
+                           [
+                             "mds",
+                             "--version",
+                             mds_pkgver,
+                             "--pkgs_dir",
+                             gnb_pkgs_dir,
+                           ],
+                           "string")
 }
 
 declare_toolchain(profile_toolchain) {
