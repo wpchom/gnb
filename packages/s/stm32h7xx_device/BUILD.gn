@@ -1,10 +1,6 @@
 declare_args() {
   stm32h7xx_device_pkgver = ""
   stm32h7xx_device_pkgsrc = ""
-
-  stm32h7xx_device_pkgcfg = {
-    # device_def
-  }
 }
 
 if (stm32h7xx_device_pkgsrc != "") {
@@ -21,6 +17,12 @@ if (stm32h7xx_device_pkgsrc != "") {
                                         "string")
 }
 
+declare_args() {
+  stm32h7xx_device_pkgcfg = {
+    # device
+  }
+}
+
 pkggroup("cmsis") {
   configs = [ "cmsis_core" ]
 }
@@ -28,11 +30,9 @@ pkggroup("cmsis") {
 config("stm32h7xx_device_cfg") {
   include_dirs = [ "${stm32h7xx_device_pkgdir}/Include" ]
 
-  if (defined(stm32h7xx_device_pkgcfg.device_def)) {
-    defines = [ "${stm32h7xx_device_pkgcfg.device_def}" ]
-  } else {
-    assert(false, "`stm32h7xx_device_pkgcfg.device_def` must be set")
-  }
+  assert(defined(stm32h7xx_device_pkgcfg.device),
+         "`stm32h7xx_device_pkgcfg.device` must be set")
+  defines = [ "${stm32h7xx_device_pkgcfg.devices}" ]
 }
 
 source_set("system_stm32h7xx") {

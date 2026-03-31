@@ -7,7 +7,7 @@ import sys
 sys.dont_write_bytecode = True
 
 import argparse
-from . import utils, package, build, clean, download, compress
+from . import utils, update, package, build, clean, download, compress
 
 
 def _parser():
@@ -19,7 +19,7 @@ def _parser():
 
     subparsers = parser.add_subparsers(title="action", dest="action")
 
-    subparsers.add_parser("update", aliases=["u"], help="update gnb")
+    update.parser(subparsers)
     package.parser(subparsers)
     build.parser(subparsers)
     clean.parser(subparsers)
@@ -33,7 +33,7 @@ def _parser():
 
 def _action(args):
     if (args.action == "update") or (args.action == "u"):
-        utils.update(args)
+        update.action(args)
     elif (args.action == "build") or (args.action == "b"):
         build.action(args)
     elif (args.action == "clean") or (args.action == "c"):

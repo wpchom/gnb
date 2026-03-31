@@ -1,10 +1,6 @@
 declare_args() {
   stm32f1xx_device_pkgver = ""
   stm32f1xx_device_pkgsrc = ""
-
-  stm32f1xx_device_pkgcfg = {
-    # device
-  }
 }
 
 if (stm32f1xx_device_pkgsrc != "") {
@@ -21,6 +17,12 @@ if (stm32f1xx_device_pkgsrc != "") {
                                         "string")
 }
 
+declare_args() {
+  stm32f1xx_device_pkgcfg = {
+    # device
+  }
+}
+
 pkggroup("cmsis") {
   configs = [ "cmsis_core" ]
 }
@@ -28,20 +30,16 @@ pkggroup("cmsis") {
 config("stm32f1xx_device_cfg") {
   include_dirs = [ "${stm32f1xx_device_pkgdir}/Include" ]
 
-  if (defined(stm32f1xx_device_pkgcfg.device)) {
-    defines = [ "${stm32f1xx_device_pkgcfg.device}" ]
-  }
+  assert(defined(stm32f1xx_device_pkgcfg.device),
+         "`stm32f1xx_device_pkgcfg.device` must be set")
+  defines = [ "${stm32f1xx_device_pkgcfg.device}" ]
 }
 
 source_set("system_stm32f1xx") {
   sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  if (!defined(stm32f1xx_device_pkgcfg.device)) {
-    assert(false, "`stm32f1xx_device_pkgcfg.device` must be set")
-  }
-
   if (stm32f1xx_device_pkgcfg.device == "STM32F103xB") {
-    sources += [ "startup/startup_stm32f103xb.c" ]
+    sources += [ "Startup/startup_stm32f103xb.c" ]
   } else {
   }
 

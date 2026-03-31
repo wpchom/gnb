@@ -17,7 +17,7 @@ def _parser_arguments(parser):
     parser.add_argument("url", type=str, help="url for download, or .git")
 
     parser.add_argument(
-        "-x", "--proxy", type=str, default=os.getenv("GNB_PROXY"), help="download proxy"
+        "-x", "--proxy", default=os.getenv("MDS_GNB_PROXY"), help="download proxy"
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", default=False, help="print verbose"
@@ -115,7 +115,6 @@ def download_by_url(url, outdir=os.getcwd(), proxy=None, user_agent=None, timeou
 
     os.makedirs(outdir, exist_ok=True)
 
-    print(finalurl)
     ret = subprocess.run(
         curl_command + ["-OJ", finalurl],
         cwd=outdir,

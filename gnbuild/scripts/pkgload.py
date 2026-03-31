@@ -45,7 +45,7 @@ def main():
 
     if not args.groupath:
         _, outpath = package.pkgload(
-            args.pkgs_dir, args.pkgname, args.version, os.getenv("GNB_PROXY")
+            args.pkgs_dir, args.pkgname, args.version, os.getenv("MDS_GNB_PROXY")
         )
     else:
         outpath = package.pkgpath(args.pkgs_dir, args.pkgname)

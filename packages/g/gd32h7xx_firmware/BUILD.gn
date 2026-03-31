@@ -1,11 +1,6 @@
 declare_args() {
   gd32h7xx_firmware_pkgver = ""
   gd32h7xx_firmware_pkgsrc = ""
-
-  gd32h7xx_firmware_pkgcfg = {
-    hxtal_value = 25000000
-    system_clock = "__SYSTEM_CLOCK_IRC64M"
-  }
 }
 
 if (gd32h7xx_firmware_pkgsrc != "") {
@@ -20,6 +15,13 @@ if (gd32h7xx_firmware_pkgsrc != "") {
                                            gnb_pkgs_dir,
                                          ],
                                          "string")
+}
+
+declare_args() {
+  gd32h7xx_firmware_pkgcfg = {
+    hxtal_value = 25000000
+    system_clock = "__SYSTEM_CLOCK_IRC64M"
+  }
 }
 
 pkggroup("cmsis") {

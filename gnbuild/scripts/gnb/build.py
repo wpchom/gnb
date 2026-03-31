@@ -14,7 +14,7 @@ def _parser_arguments(parser):
     parser.add_argument("target", nargs="?", default=None, help="target to build")
 
     parser.add_argument(
-        "-x", "--proxy", default=os.getenv("GNB_PROXY"), help="download proxy"
+        "-x", "--proxy", default=os.getenv("MDS_GNB_PROXY"), help="download proxy"
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", default=False, help="print verbose"
@@ -136,12 +136,13 @@ def run_build(
     with open(os.path.join(output, ".gitignore"), "w+") as f:
         f.write("*\n")
 
+    env = os.environ.copy()
+    env["MDS_REPO_DIR"] = repo_dir
+    if proxy != None:
+        env["MDS_GNB_PROXY"] = proxy
+
     ret = subprocess.run(
-        gn_command,
-        cwd=builddir,
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        env={**os.environ, "MDS_REPO_DIR": repo_dir},
+        gn_command, cwd=builddir, stdout=sys.stdout, stderr=sys.stderr, env=env
     )
     if ret.returncode != 0:
         utils.error(" ".join(gn_command))
@@ -158,7 +159,7 @@ def run_build(
         ninja_command += [target]
 
     ret = subprocess.run(
-        ninja_command, cwd=output, stdout=sys.stdout, stderr=sys.stderr
+        ninja_command, cwd=output, stdout=sys.stdout, stderr=sys.stderr, env=env
     )
 
     # complete

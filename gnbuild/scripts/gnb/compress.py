@@ -80,15 +80,12 @@ def decompress(input_file, output_path, force=False):
 
 
 def _decompress_archive(input_file, output_path):
-    if not os.path.exists(output_path):
-        os.makedirs(output_path, exist_ok=True)
-
     p7z = shutil.which("7z")
     if p7z != None:
         import subprocess
 
         p7z_command = [p7z, "x", input_file, "-o" + output_path]
-        ret = subprocess.run(p7z_command, stdout=sys.stdout, stderr=sys.stderr)
+        ret = subprocess.run(p7z_command, stdout=subprocess.PIPE, stderr=sys.stderr)
         if ret.returncode != 0:
             utils.error("7z decompress failed")
 

@@ -16,7 +16,7 @@ def _parser_arguments(parser):
     )
 
     parser.add_argument(
-        "-x", "--proxy", type=str, default=os.getenv("GNB_PROXY"), help="download proxy"
+        "-x", "--proxy", default=os.getenv("MDS_GNB_PROXY"), help="download proxy"
     )
     parser.add_argument(
         "-v", "--verbose", action="store_true", default=False, help="print verbose"
@@ -143,7 +143,9 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
 
 
 def _pkg_pkgtemp_path(pkgs_dir, subdir, pkgname):
-    return os.path.join(os.path.expanduser("~"), ".gnbuild", subdir, pkgname[0], pkgname)
+    return os.path.join(
+        os.path.expanduser("~"), ".gnbuild", subdir, pkgname[0], pkgname
+    )
     # return os.path.join(pkgs_dir, ".temp", subdir, pkgname[0], pkgname)
 
 
@@ -152,7 +154,7 @@ def _pkg_download_path(pkgs_dir, pkgdesc):
 
     if ("type" in pkgdesc) and (pkgdesc["type"] in ["binary"]):
         download_path = os.path.join(
-            download_path, _pkg_package_plat(), pkgdesc["version"]
+            download_path, _pkg_package_plat() + "-" + pkgdesc["version"]
         )
     else:
         download_path = os.path.join(download_path, pkgdesc["version"])
@@ -165,7 +167,7 @@ def _pkg_resource_path(pkgs_dir, pkgdesc):
 
     if ("type" in pkgdesc) and (pkgdesc["type"] in ["binary"]):
         resouce_path = os.path.join(
-            resouce_path, _pkg_package_plat(), pkgdesc["version"]
+            resouce_path, _pkg_package_plat() + "-" + pkgdesc["version"]
         )
     else:
         resouce_path = os.path.join(resouce_path, pkgdesc["version"])
@@ -178,7 +180,7 @@ def _pkg_buildout_path(pkgs_dir, pkgdesc):
 
     if ("type" in pkgdesc) and (pkgdesc["type"] in ["binary"]):
         buildout_path = os.path.join(
-            buildout_path, _pkg_package_plat(), pkgdesc["version"]
+            buildout_path, _pkg_package_plat() + "-" + pkgdesc["version"]
         )
     else:
         buildout_path = os.path.join(buildout_path, pkgdesc["version"])
@@ -209,7 +211,8 @@ def _pkg_clean_remove(pkgs_dir, pkgdesc, clean=False, remove=False):
 
     buildout_dir = _pkg_buildout_path(pkgs_dir, pkgdesc)
     resource_dir = _pkg_resource_path(pkgs_dir, pkgdesc)
-    download_tmp = resource_dir + ".tmp"
+    download_dir = _pkg_download_path(pkgs_dir, pkgdesc)
+    download_tmp = download_dir + ".tmp"
 
     if remove and os.path.exists(download_tmp):
         shutil.rmtree(download_tmp)
@@ -464,8 +467,8 @@ def _pkg_split_extension(filename):
     return (filename[: -len(extension)], extension)
 
 
-def _pkg_check_download(resource_dir, pkgdesc):
-    checkdir = os.path.dirname(resource_dir)
+def _pkg_check_download(download_dir, pkgdesc):
+    checkdir = os.path.dirname(download_dir)
 
     if not os.path.exists(checkdir):
         return None
@@ -497,22 +500,26 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
     pkgname = pkgdesc["name"]
     pkgvers = pkgdesc["version"]
 
+    download_dir = _pkg_download_path(pkgs_dir, pkgdesc)
     resource_dir = _pkg_resource_path(pkgs_dir, pkgdesc)
 
-    if remove and os.path.exists(resource_dir):
+    if os.path.exists(resource_dir) and (
+        remove or (len(os.listdir(resource_dir)) == 0)
+    ):
         shutil.rmtree(resource_dir)
 
     pkgurl = pkgdesc["url"]
     if not os.path.exists(resource_dir):
         if pkgurl.endswith(".git"):
-            os.makedirs(os.path.dirname(resource_dir), exist_ok=True)
-            pkgpath = download.download_by_git(pkgurl, resource_dir, pkgvers, proxy)
+            os.makedirs(os.path.dirname(download_dir), exist_ok=True)
+            pkgpath = download.download_by_git(pkgurl, download_dir, pkgvers, proxy)
+            shutil.move(download_dir, resource_dir)
         else:
-            download_tmp = resource_dir + ".tmp"
-            if remove and os.path.exists(download_tmp):
+            download_tmp = download_dir + ".tmp"
+            if os.path.exists(download_tmp):
                 shutil.rmtree(download_tmp)
 
-            download_file = _pkg_check_download(resource_dir, pkgdesc)
+            download_file = _pkg_check_download(download_dir, pkgdesc)
             if remove and (download_file != None):
                 os.remove(download_file)
                 download_file = None
@@ -528,12 +535,12 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
 
                 if ("type" in pkgdesc) and (pkgdesc["type"] in ["binary"]):
                     download_file = os.path.join(
-                        os.path.dirname(resource_dir),
+                        os.path.dirname(download_dir),
                         f"{_pkg_package_plat()}-{pkgvers}{extension}",
                     )
                 else:
                     download_file = os.path.join(
-                        os.path.dirname(resource_dir), f"{pkgvers}{extension}"
+                        os.path.dirname(download_dir), f"{pkgvers}{extension}"
                     )
 
                 shutil.move(pkgpath, download_file)
@@ -541,7 +548,8 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
 
             _, extension = _pkg_split_extension(download_file)
             if extension in _EXTRACT_EXTENSIONS:
-                compress.decompress(download_file, resource_dir, True)
+                if compress.decompress(download_file, resource_dir, True):
+                    shutil.rmtree(resource_dir)
 
     if "dir" in pkgdesc:
         retpath = os.path.abspath(os.path.join(resource_dir, pkgdesc["dir"]))

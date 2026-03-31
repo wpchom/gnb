@@ -1,9 +1,6 @@
 declare_args() {
   lzma_sdk_pkgver = ""
   lzma_sdk_pkgsrc = ""
-
-  lzma_sdk_pkgcfg = {
-  }
 }
 
 if (lzma_sdk_pkgsrc != "") {
@@ -18,6 +15,12 @@ if (lzma_sdk_pkgsrc != "") {
                                   gnb_pkgs_dir,
                                 ],
                                 "string")
+}
+
+declare_args() {
+  lzma_sdk_pkgcfg = {
+    size_opt = true
+  }
 }
 
 declare_toolchain(profile_toolchain) {

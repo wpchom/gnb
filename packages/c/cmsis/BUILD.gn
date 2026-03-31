@@ -1,9 +1,6 @@
 declare_args() {
   cmsis_pkgver = ""
   cmsis_pkgsrc = ""
-
-  cmsis_pkgcfg = {
-  }
 }
 
 if (cmsis_pkgsrc != "") {

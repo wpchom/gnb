@@ -1,11 +1,6 @@
 declare_args() {
   gd32e11x_firmware_pkgver = ""
   gd32e11x_firmware_pkgsrc = ""
-
-  gd32e11x_firmware_pkgcfg = {
-    hxtal_value = 8000000
-    system_clock = "__SYSTEM_CLOCK_IRC8M"
-  }
 }
 
 if (gd32e11x_firmware_pkgsrc != "") {
@@ -20,6 +15,13 @@ if (gd32e11x_firmware_pkgsrc != "") {
                                            gnb_pkgs_dir,
                                          ],
                                          "string")
+}
+
+declare_args() {
+  gd32e11x_firmware_pkgcfg = {
+    hxtal_value = 8000000
+    system_clock = "__SYSTEM_CLOCK_IRC8M"
+  }
 }
 
 pkggroup("cmsis") {

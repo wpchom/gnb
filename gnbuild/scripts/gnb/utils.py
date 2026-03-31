@@ -17,15 +17,20 @@ MDS_REPO_DIR = os.path.dirname(
 
 def debug(*args):
     message = " ".join(str(arg) for arg in args)
-    sys.stdout.write(f"{message}\n")
-    sys.stdout.flush()
+    sys.stderr.write(f"{message}\n")
+    sys.stderr.flush()
 
 
 def info(*args):
     message = " ".join(str(arg) for arg in args)
-    sys.stdout.write(f"\033[32m>>> {message}\033[0m\n")
-    sys.stdout.flush()
+    sys.stderr.write(f"\033[32m>>> {message}\033[0m\n")
+    sys.stderr.flush()
 
+
+def warn(*args):
+    message = " ".join(str(arg) for arg in args)
+    sys.stderr.write(f"\033[33m>>> {message}\033[0m\n")
+    sys.stderr.flush()
 
 def error(*args):
     message = " ".join(str(arg) for arg in args)
@@ -76,23 +81,10 @@ def check_ninja(pkgs_dir, proxy):
     return ninja_bin
 
 
-def update(args):
-    import subprocess
-
-    if not ".git" in os.listdir(MDS_REPO_DIR):
-        error(f"`{MDS_REPO_DIR}` is not a git repository")
-
+def check_git(pkgs_dir, proxy):
     git_bin = shutil.which("git")
+
     if git_bin == None:
         error("git is not installed")
-    else:
-        try:
-            subprocess.run(
-                [git_bin, "-C", MDS_REPO_DIR, "pull"],
-                cwd=MDS_REPO_DIR,
-                stdout=sys.stdout,
-                stderr=sys.stderr,
-                check=True,
-            )
-        except Exception as e:
-            error(f"`git -C {MDS_REPO_DIR} pull` failed", f"\n{str(e)}")
+
+    return git_bin

@@ -1,10 +1,6 @@
 declare_args() {
   mds_pkgver = ""
   mds_pkgsrc = ""
-
-  mds_pkgcfg = {
-    cfgfile = ""
-  }
 }
 
 if (mds_pkgsrc != "") {

@@ -1,10 +1,6 @@
 declare_args() {
   stm32h7xx_hal_driver_pkgver = ""
   stm32h7xx_hal_driver_pkgsrc = ""
-
-  stm32h7xx_hal_driver_pkgcfg = {
-    # device_def
-  }
 }
 
 if (stm32h7xx_hal_driver_pkgsrc != "") {
@@ -21,6 +17,12 @@ if (stm32h7xx_hal_driver_pkgsrc != "") {
                                             "string")
 }
 
+declare_args() {
+  stm32h7xx_hal_driver_pkgcfg = {
+    # device_def
+  }
+}
+
 pkggroup("stm32h7xx_device") {
   config = [ "stm32h7xx_device_cfg" ]
 }
@@ -28,9 +30,9 @@ pkggroup("stm32h7xx_device") {
 config("stm32h7xx_hal_driver_cfg") {
   include_dirs = [ "${stm32h7xx_hal_driver_pkgdir}/Inc" ]
 
-  if (defined(stm32h7xx_hal_driver_confdir)) {
-    include_dirs += [ "${stm32h7xx_hal_driver_confdir}" ]
-  }
+  assert(defined(stm32h7xx_hal_driver_pkgcfg.confdir),
+         "stm32h7xx_hal_driver_pkgcfg.confdir is not defined")
+  include_dirs += [ "${stm32h7xx_hal_driver_pkgcfg.confdir}" ]
 }
 
 static_library("stm32h7xx_hal_driver") {
