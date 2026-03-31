@@ -1,0 +1,70 @@
+declare_args() {
+  lzma_pkgver = ""
+  lzma_pkgsrc = ""
+}
+
+if (lzma_pkgsrc != "") {
+  lzma_pkgdir = lzma_pkgsrc
+} else {
+  lzma_pkgdir = exec_script(gnb_pkgload,
+                            [
+                              "lzma",
+                              "--version",
+                              lzma_pkgver,
+                              "--pkgs_dir",
+                              gnb_pkgs_dir,
+                            ],
+                            "string")
+}
+
+declare_args() {
+  lzma_pkgcfg = {
+    size_opt = true
+    prob32 = false
+  }
+}
+
+declare_toolchain(profile_toolchain) {
+}
+
+config("lzma_cfg") {
+  include_dirs = [ "${lzma_pkgdir}/C" ]
+
+  defines = []
+  if (defined(lzma_pkgcfg.prob32) && lzma_pkgcfg.prob32) {
+    defines += [ "Z7_LZMA_SIZE_OPT=1" ]
+  }
+  if (defined(lzma_pkgcfg.prob32) && lzma_pkgcfg.prob32) {
+    defines += [ "Z7_LZMA_PROB32=1" ]
+  }
+}
+
+static_library("lzma_lib") {
+  sources = [
+    "${lzma_pkgdir}/C/Alloc.c",
+    "${lzma_pkgdir}/C/CpuArch.c",
+    "${lzma_pkgdir}/C/LzFind.c",
+    "${lzma_pkgdir}/C/LzFindMt.c",
+    "${lzma_pkgdir}/C/LzmaDec.c",
+    "${lzma_pkgdir}/C/LzmaEnc.c",
+    "${lzma_pkgdir}/C/LzmaLib.c",
+    "${lzma_pkgdir}/C/Threads.c",
+  ]
+
+  public_configs = [ ":lzma_cfg" ]
+}
+
+executable("lzma_util") {
+  sources = [
+    "${lzma_pkgdir}/C/7zFile.c",
+    "${lzma_pkgdir}/C/7zStream.c",
+    "${lzma_pkgdir}/C/LzFindOpt.c",
+  ]
+  sources += [ "${lzma_pkgdir}/C/Util/Lzma/LzmaUtil.c" ]
+
+  public_deps = [ ":lzma_lib" ]
+}
+
+group("default") {
+  public_deps = [ ":lzma_lib" ]
+}
