@@ -6,15 +6,17 @@ declare_args() {
 if (drv_chip_stm32f1xx_pkgsrc != "") {
   drv_chip_stm32f1xx_pkgdir = drv_chip_stm32f1xx_pkgsrc
 } else {
-  drv_chip_stm32f1xx_pkgdir = exec_script(gnb_pkgload,
-                                          [
-                                            "drv_chip_stm32f1xx",
-                                            "--version",
-                                            drv_chip_stm32f1xx_pkgver,
-                                            "--pkgs_dir",
-                                            gnb_pkgs_dir,
-                                          ],
-                                          "string")
+  drv_chip_stm32f1xx_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "drv_chip_stm32f1xx:${drv_chip_stm32f1xx_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  drv_chip_stm32f1xx_pkgret = string_split(drv_chip_stm32f1xx_pkgret, ":")
+  drv_chip_stm32f1xx_pkgver = drv_chip_stm32f1xx_pkgret[0]
+  drv_chip_stm32f1xx_pkgdir = drv_chip_stm32f1xx_pkgret[1]
 }
 
 group("default") {

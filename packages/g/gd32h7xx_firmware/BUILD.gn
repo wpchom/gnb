@@ -6,15 +6,18 @@ declare_args() {
 if (gd32h7xx_firmware_pkgsrc != "") {
   gd32h7xx_firmware_pkgdir = gd32h7xx_firmware_pkgsrc
 } else {
-  gd32h7xx_firmware_pkgdir = exec_script(gnb_pkgload,
-                                         [
-                                           "gd32h7xx_firmware",
-                                           "--version",
-                                           gd32h7xx_firmware_pkgver,
-                                           "--pkgs_dir",
-                                           gnb_pkgs_dir,
-                                         ],
-                                         "string")
+  gd32h7xx_firmware_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "gd32h7xx_firmware:${gd32h7xx_firmware_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  gd32h7xx_firmware_pkgret = string_split(gd32h7xx_firmware_pkgret, ":")
+  gd32h7xx_firmware_pkgver = gd32h7xx_firmware_pkgret[0]
+  gd32h7xx_firmware_pkgdir =
+      gd32h7xx_firmware_pkgret[1] + "/GD32H7xx_Firmware_Library_V${gd32h7xx_firmware_pkgver}/Firmware"
 }
 
 declare_args() {
@@ -46,6 +49,7 @@ static_library("gd32h7xx_firmware") {
   sources = [
     "${gd32h7xx_firmware_pkgdir}/CMSIS/GD/GD32H7xx/Source/system_gd32h7xx.c",
     "src/gd32h7xx_redirect.c",
+    "src/startup_gd32h7xx.c",
   ]
 
   defines = []

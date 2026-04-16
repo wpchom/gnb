@@ -42,12 +42,6 @@ def decompress(input_file, output_path, force=False):
     if output_path == None:
         output_path = os.path.dirname(input_file)
 
-    if os.path.exists(output_path):
-        if force:
-            shutil.rmtree(output_path)
-        else:
-            utils.error(f"Output directory already exists: `{output_path}`")
-
     if (input_file.split(".")[-2] in ["tar"]) or (
         input_file.split(".")[-1] in ["tgz", "tbz2", "txz"]
     ):
@@ -84,7 +78,7 @@ def _decompress_archive(input_file, output_path):
     if p7z != None:
         import subprocess
 
-        p7z_command = [p7z, "x", input_file, "-o" + output_path]
+        p7z_command = [p7z, "x", input_file, "-o" + output_path, "-y"]
         ret = subprocess.run(p7z_command, stdout=subprocess.PIPE, stderr=sys.stderr)
         if ret.returncode != 0:
             utils.error("7z decompress failed")

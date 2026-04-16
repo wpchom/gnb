@@ -24,7 +24,6 @@ package("stm32f1xx_device", function()
     end)
 
     set_policy("package.keep_source", true)
-    -- set_policy("package.install_locally", true)
     on_install(function(package)
         os.cp(path.join(os.scriptdir(), "Startup"), "Startup")
         os.cp(path.join(os.scriptdir(), "stm32f1xx_device.lua"), "xmake.lua")

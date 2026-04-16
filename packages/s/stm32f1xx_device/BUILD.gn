@@ -6,15 +6,17 @@ declare_args() {
 if (stm32f1xx_device_pkgsrc != "") {
   stm32f1xx_device_pkgdir = stm32f1xx_device_pkgsrc
 } else {
-  stm32f1xx_device_pkgdir = exec_script(gnb_pkgload,
-                                        [
-                                          "stm32f1xx_device",
-                                          "--version",
-                                          stm32f1xx_device_pkgver,
-                                          "--pkgs_dir",
-                                          gnb_pkgs_dir,
-                                        ],
-                                        "string")
+  stm32f1xx_device_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "stm32f1xx_device:${stm32f1xx_device_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  stm32f1xx_device_pkgret = string_split(stm32f1xx_device_pkgret, ":")
+  stm32f1xx_device_pkgver = stm32f1xx_device_pkgret[0]
+  stm32f1xx_device_pkgdir = stm32f1xx_device_pkgret[1]
 }
 
 declare_args() {

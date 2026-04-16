@@ -6,15 +6,17 @@ declare_args() {
 if (drv_chip_gd32e11x_pkgsrc != "") {
   drv_chip_gd32e11x_pkgdir = drv_chip_gd32e11x_pkgsrc
 } else {
-  drv_chip_gd32e11x_pkgdir = exec_script(gnb_pkgload,
-                                         [
-                                           "drv_chip_gd32e11x",
-                                           "--version",
-                                           drv_chip_gd32e11x_pkgver,
-                                           "--pkgs_dir",
-                                           gnb_pkgs_dir,
-                                         ],
-                                         "string")
+  drv_chip_gd32e11x_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "drv_chip_gd32e11x:${drv_chip_gd32e11x_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  drv_chip_gd32e11x_pkgret = string_split(drv_chip_gd32e11x_pkgret, ":")
+  drv_chip_gd32e11x_pkgver = drv_chip_gd32e11x_pkgret[0]
+  drv_chip_gd32e11x_pkgdir = drv_chip_gd32e11x_pkgret[1]
 }
 
 group("default") {

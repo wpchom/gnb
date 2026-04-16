@@ -17,15 +17,16 @@ declare_args() {
 if (littlefs_pkgsrc != "") {
   littlefs_pkgdir = littlefs_pkgsrc
 } else {
-  littlefs_pkgdir = exec_script(gnb_pkgload,
+  littlefs_pkgret = exec_script(gnb_pkgload,
                                 [
-                                  "littlefs",
-                                  "--version",
-                                  littlefs_pkgver,
+                                  "littlefs:${littlefs_pkgver}",
                                   "--pkgs_dir",
                                   gnb_pkgs_dir,
                                 ],
                                 "string")
+  littlefs_pkgret = string_split(littlefs_pkgret, ":")
+  littlefs_pkgver = littlefs_pkgret[0]
+  littlefs_pkgdir = littlefs_pkgret[1]
 }
 
 declare_toolchain(profile_toolchain) {

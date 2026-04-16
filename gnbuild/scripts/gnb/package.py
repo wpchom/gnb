@@ -136,6 +136,14 @@ def _pkg_pkgfile_read(pkgs_dir, pkgname, pkgvers):
         elif "*" in pkgdesc["dir"]:
             pkgdesc["dir"] = pkgdesc["dir"]["*"].format(version=pkgvers)
 
+    if "unp" in pkgdesc:
+        if type(pkgdesc["unp"]) != list:
+            utils.error(f"Package [{pkgname}] unp is not a list")
+        unpack_list = []
+        for unp in pkgdesc["unp"]:
+            unpack_list.append(unp.format(version=pkgvers))
+        pkgdesc["unp"] = unpack_list
+
     if "type" in pkgjson:
         pkgdesc["type"] = pkgjson["type"]
 
@@ -508,6 +516,11 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
     ):
         shutil.rmtree(resource_dir)
 
+    if "dir" in pkgdesc:
+        retpath = os.path.abspath(os.path.join(resource_dir, pkgdesc["dir"]))
+    else:
+        retpath = os.path.abspath(resource_dir)
+
     pkgurl = pkgdesc["url"]
     if not os.path.exists(resource_dir):
         if pkgurl.endswith(".git"):
@@ -548,12 +561,12 @@ def pkgload(pkgs_dir, pkgname, pkgvers=None, proxy=None, remove=False):
 
             _, extension = _pkg_split_extension(download_file)
             if extension in _EXTRACT_EXTENSIONS:
-                if compress.decompress(download_file, resource_dir, True):
+                if compress.decompress(download_file, resource_dir, False):
                     shutil.rmtree(resource_dir)
 
-    if "dir" in pkgdesc:
-        retpath = os.path.abspath(os.path.join(resource_dir, pkgdesc["dir"]))
-    else:
-        retpath = os.path.abspath(resource_dir)
+        if "unp" in pkgdesc:
+            for p in pkgdesc["unp"]:
+                unfile = os.path.join(retpath, p)
+                compress.decompress(unfile, os.path.dirname(unfile), False)
 
     return (pkgvers, retpath)

@@ -39,7 +39,7 @@ __attribute__((weak, alias("Default_Handler"))) void SVC_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void DebugMon_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void PendSV_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void SysTick_Handler(void);
-#ifndef DRV_CHIP_WITHOUT_IRQ
+
 __attribute__((weak, alias("Default_Handler"))) void WWDG_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void PVD_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TAMPER_IRQHandler(void);
@@ -74,7 +74,6 @@ __attribute__((weak, alias("Default_Handler"))) void USART2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void USART3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void EXTI15_10_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void RTC_Alarm_IRQHandler(void);
-#endif
 
 static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     (void *)(&__INITIAL_SP),
@@ -93,7 +92,7 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     PendSV_Handler,
     SysTick_Handler,
-#ifndef DRV_CHIP_WITHOUT_IRQ
+
     WWDG_IRQHandler,
     PVD_IRQHandler,
     TAMPER_IRQHandler,
@@ -144,8 +143,9 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     0,
     0,
-    (void*)0xF108F85F, /* @0x108. This is for boot in RAM mode for STM32F10x Medium Density devices. */
-#endif
+    /* @0x108. This is for boot in RAM mode for STM32F10x Medium Density devices. */
+    (void *)0xF108F85F,
+
 };
 
 /* Function ---------------------------------------------------------------- */
@@ -196,25 +196,21 @@ __attribute__((noreturn)) void DRV_CHIP_JumpIntoVectorAddress(uintptr_t vectorAd
     }
 }
 
-__attribute__((__noreturn__)) void DRV_CHIP_JumpIntoDFU(void)
+__attribute__((noreturn)) void DRV_CHIP_JumpIntoDFU(void)
 {
     DRV_CHIP_JumpIntoVectorAddress(0x1FFFF000);
 }
 
-__attribute__((__noreturn__)) void DRV_CHIP_SystemReset(void)
+__attribute__((noreturn)) void DRV_CHIP_SystemReset(void)
 {
     NVIC_SystemReset();
 }
 
 // gcc
-__attribute__((weak, naked, __noreturn__)) void _start(void)
-{
-    __asm volatile("bl     main");
-    __asm volatile("b      .");
-}
-
-__attribute__((naked, __noreturn__)) void _exit(int status)
+__attribute__((weak, noreturn)) void _exit(int status)
 {
     (void)(status);
-    __asm volatile("b      .");
+    for (;;) {
+        __WFI();
+    }
 }

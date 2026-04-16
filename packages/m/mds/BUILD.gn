@@ -6,36 +6,21 @@ declare_args() {
 if (mds_pkgsrc != "") {
   mds_pkgdir = mds_pkgsrc
 } else {
-  mds_pkgdir = exec_script(gnb_pkgload,
+  mds_pkgret = exec_script(gnb_pkgload,
                            [
-                             "mds",
-                             "--version",
-                             mds_pkgver,
+                             "mds:${mds_pkgver}",
                              "--pkgs_dir",
                              gnb_pkgs_dir,
                            ],
                            "string")
+  mds_pkgret = string_split(mds_pkgret, ":")
+  mds_pkgver = mds_pkgret[0]
+  mds_pkgdir = mds_pkgret[1]
 }
 
 declare_toolchain(profile_toolchain) {
 }
 
-group("kernel") {
-  public_deps = [ "${mds_pkgdir}/:kernel" ]
-}
-
-group("device") {
-  public_deps = [ "${mds_pkgdir}/:device" ]
-}
-
-group("components") {
-  public_deps = [ "${mds_pkgdir}/:components" ]
-}
-
 group("default") {
-  public_deps = [
-    ":components",
-    ":device",
-    ":kernel",
-  ]
+  public_deps = [ "${mds_pkgdir}/:mds" ]
 }

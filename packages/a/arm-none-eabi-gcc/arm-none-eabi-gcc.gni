@@ -21,15 +21,18 @@ declare_args() {
 if (arm_none_eabi_gcc_pkgsrc != "") {
   arm_none_eabi_gcc_pkgdir = arm_none_eabi_gcc_pkgsrc
 } else {
-  arm_none_eabi_gcc_pkgdir = exec_script(gnb_pkgload,
-                                         [
-                                           "arm-none-eabi-gcc",
-                                           "--version",
-                                           arm_none_eabi_gcc_pkgver,
-                                           "--pkgs_dir",
-                                           gnb_pkgs_dir,
-                                         ],
-                                         "string")
+  arm_none_eabi_gcc_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "arm-none-eabi-gcc:${arm_none_eabi_gcc_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+
+  arm_none_eabi_gcc_pkgret = string_split(arm_none_eabi_gcc_pkgret, ":")
+  arm_none_eabi_gcc_pkgver = arm_none_eabi_gcc_pkgret[0]
+  arm_none_eabi_gcc_pkgdir = arm_none_eabi_gcc_pkgret[1]
 }
 
 template("arm_none_eabi_toolchain") {

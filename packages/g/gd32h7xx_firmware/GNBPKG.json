@@ -8,8 +8,11 @@
                 "*": "https://www.gd32mcu.com/data/documents/toolSoftware/GD32H7xx_Firmware_Library_V{version}.7z"
             },
             "dir": {
-                "*": "GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/GD32H7xx_Firmware_Library_V{version}/Firmware"
-            }
+                "*": "GD32H7xx_Firmware_Library_V{version}"
+            },
+            "unp": [
+                "GD32H7xx_Firmware_Library_V{version}.7z"
+            ]
         }
     ]
 }

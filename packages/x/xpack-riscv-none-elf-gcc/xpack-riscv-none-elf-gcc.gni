@@ -21,15 +21,17 @@ declare_args() {
 if (riscv_none_elf_gcc_pkgsrc != "") {
   riscv_none_elf_gcc_pkgdir = riscv_none_elf_gcc_pkgsrc
 } else {
-  riscv_none_elf_gcc_pkgdir = exec_script(gnb_pkgload,
-                                          [
-                                            "xpack-riscv-none-elf-gcc",
-                                            "--version",
-                                            riscv_none_elf_gcc_pkgver,
-                                            "--pkgs_dir",
-                                            gnb_pkgs_dir,
-                                          ],
-                                          "string")
+  riscv_none_elf_gcc_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "xpack-riscv-none-elf-gcc:${riscv_none_elf_gcc_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  riscv_none_elf_gcc_pkgret = string_split(riscv_none_elf_gcc_pkgret, ":")
+  riscv_none_elf_gcc_pkgver = riscv_none_elf_gcc_pkgret[0]
+  riscv_none_elf_gcc_pkgdir = riscv_none_elf_gcc_pkgret[1]
 }
 
 template("riscv_none_elf_toolchain") {

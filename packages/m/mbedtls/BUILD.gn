@@ -11,15 +11,16 @@ declare_args() {
 if (mbedtls_pkgsrc != "") {
   mbedtls_pkgdir = mbedtls_pkgsrc
 } else {
-  mbedtls_pkgdir = exec_script(gnb_pkgload,
+  mbedtls_pkgret = exec_script(gnb_pkgload,
                                [
-                                 "mbedtls",
-                                 "--version",
-                                 mbedtls_pkgver,
+                                 "mbedtls:${mbedtls_pkgver}",
                                  "--pkgs_dir",
                                  gnb_pkgs_dir,
                                ],
                                "string")
+  mbedtls_pkgret = string_split(mbedtls_pkgret, ":")
+  mbedtls_pkgver = mbedtls_pkgret[0]
+  mbedtls_pkgdir = mbedtls_pkgret[1]
 }
 tf_psa_crypto_pkgdir = "${mbedtls_pkgdir}/tf-psa-crypto"
 

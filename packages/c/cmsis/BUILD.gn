@@ -6,15 +6,16 @@ declare_args() {
 if (cmsis_pkgsrc != "") {
   cmsis_pkgdir = cmsis_pkgsrc
 } else {
-  cmsis_pkgdir = exec_script(gnb_pkgload,
+  cmsis_pkgret = exec_script(gnb_pkgload,
                              [
-                               "cmsis",
-                               "--version",
-                               cmsis_pkgver,
+                               "cmsis:${cmsis_pkgver}",
                                "--pkgs_dir",
                                gnb_pkgs_dir,
                              ],
                              "string")
+  cmsis_pkgret = string_split(cmsis_pkgret, ":")
+  cmsis_pkgver = cmsis_pkgret[0]
+  cmsis_pkgdir = cmsis_pkgret[1]
 }
 
 declare_toolchain(profile_toolchain) {

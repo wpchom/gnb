@@ -8,8 +8,11 @@
                 "*": "https://www.gd32mcu.com/data/documents/toolSoftware/GD32E11x_Firmware_Library_V{version}.7z"
             },
             "dir": {
-                "*": "GD32E11x_Firmware_Library_V{version}/GD32E11x_Firmware_Library_V{version}/GD32E11x_Firmware_Library/Firmware"
-            }
+                "*": "GD32E11x_Firmware_Library_V{version}"
+            },
+            "unp": [
+                "GD32E11x_Firmware_Library_V{version}.7z"
+            ]
         }
     ]
 }

@@ -12,10 +12,7 @@ def main():
     from gnb import package, utils
 
     parser = argparse.ArgumentParser(description="get gnb package path")
-    parser.add_argument("pkgname", metavar="PKGNAME", type=str, help="package name")
-    parser.add_argument(
-        "-v", "--version", type=str, default=None, help="package version"
-    )
+    parser.add_argument("package", metavar="PACKAGE", type=str, help="package name")
     parser.add_argument(
         "-p", "--pkgs_dir", type=str, default=None, help="packages repos dir"
     )
@@ -29,6 +26,16 @@ def main():
 
     args = parser.parse_args()
 
+    pkglist = args.package.split(":")
+    if len(pkglist) > 2:
+        utils.error("Invalid package name")
+    elif len(pkglist) == 2:
+        pkgname = pkglist[0]
+        pkgvers = pkglist[1]
+    else:
+        pkgname = pkglist[0]
+        pkgvers = "latest"
+
     if args.pkgs_dir == None:
         if os.environ.get("MDS_PKGS_DIR") != None:
             args.pkgs_dir = os.environ.get("MDS_PKGS_DIR")
@@ -41,19 +48,14 @@ def main():
     if not os.path.exists(args.pkgs_dir):
         utils.error(f"Package source directory does not exist: {args.pkgs_dir}")
 
-    outpath = None
-
     if not args.groupath:
-        _, outpath = package.pkgload(
-            args.pkgs_dir, args.pkgname, args.version, os.getenv("MDS_GNB_PROXY")
+        pkgvers, pkgpath = package.pkgload(
+            args.pkgs_dir, pkgname, pkgvers, os.getenv("MDS_GNB_PROXY")
         )
+        sys.stdout.write(f"{pkgvers}:{pkgpath}")
     else:
-        outpath = package.pkgpath(args.pkgs_dir, args.pkgname)
-
-    if outpath == None:
-        utils.error(f"Package `{args.pkgname}:{args.version}` not found")
-
-    sys.stdout.write(outpath)
+        pkgpath = package.pkgpath(args.pkgs_dir, pkgname)
+        sys.stdout.write(f"{pkgpath}")
 
 
 if __name__ == "__main__":

@@ -6,15 +6,17 @@ declare_args() {
 if (stm32f1xx_hal_driver_pkgsrc != "") {
   stm32f1xx_hal_driver_pkgdir = stm32f1xx_hal_driver_pkgsrc
 } else {
-  stm32f1xx_hal_driver_pkgdir = exec_script(gnb_pkgload,
-                                            [
-                                              "stm32f1xx_hal_driver",
-                                              "--version",
-                                              stm32f1xx_hal_driver_pkgver,
-                                              "--pkgs_dir",
-                                              gnb_pkgs_dir,
-                                            ],
-                                            "string")
+  stm32f1xx_hal_driver_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "stm32f1xx_hal_driver:${stm32f1xx_hal_driver_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  stm32f1xx_hal_driver_pkgret = string_split(stm32f1xx_hal_driver_pkgret, ":")
+  stm32f1xx_hal_driver_pkgver = stm32f1xx_hal_driver_pkgret[0]
+  stm32f1xx_hal_driver_pkgdir = stm32f1xx_hal_driver_pkgret[1]
 }
 
 declare_args() {

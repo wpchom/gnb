@@ -6,15 +6,17 @@ declare_args() {
 if (stm32h7xx_device_pkgsrc != "") {
   stm32h7xx_device_pkgdir = stm32h7xx_device_pkgsrc
 } else {
-  stm32h7xx_device_pkgdir = exec_script(gnb_pkgload,
-                                        [
-                                          "stm32h7xx_device",
-                                          "--version",
-                                          stm32h7xx_device_pkgver,
-                                          "--pkgs_dir",
-                                          gnb_pkgs_dir,
-                                        ],
-                                        "string")
+  stm32h7xx_device_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "stm32h7xx_device:${stm32h7xx_device_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  stm32h7xx_device_pkgret = string_split(stm32h7xx_device_pkgret, ":")
+  stm32h7xx_device_pkgver = stm32h7xx_device_pkgret[0]
+  stm32h7xx_device_pkgdir = stm32h7xx_device_pkgret[1]
 }
 
 declare_args() {
@@ -32,47 +34,49 @@ config("stm32h7xx_device_cfg") {
 
   assert(defined(stm32h7xx_device_pkgcfg.device),
          "`stm32h7xx_device_pkgcfg.device` must be set")
-  defines = [ "${stm32h7xx_device_pkgcfg.devices}" ]
+  defines = [ "${stm32h7xx_device_pkgcfg.device}" ]
+}
+
+source_set("startup_stm32h7xx") {
+  sources = []
+
+  if (stm32h7xx_device_pkgcfg.device == "STM32H750xx") {
+    sources += [ "Startup/startup_stm32h750xx.c" ]
+  } else {
+  }
+
+  public_configs = [ ":stm32h7xx_device_cfg" ]
+  public_deps = [ ":cmsis" ]
 }
 
 source_set("system_stm32h7xx") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_deps = [ ":startup_stm32h7xx" ]
 }
 
 source_set("system_stm32h7xx_singlecore") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_deps = [ ":startup_stm32h7xx" ]
 }
 
 source_set("system_stm32h7xx_dualcore_boot_cm4_cm7") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_deps = [ ":startup_stm32h7xx" ]
 }
 
 source_set("system_stm32h7xx_dualcore_bootcm4_cm7gated") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_deps = [ ":startup_stm32h7xx" ]
 }
 
 source_set("system_stm32h7xx_dualcore_bootcm7_cm4gated") {
   sources = [ "${stm32h7xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
 
-  public_configs = [ ":stm32h7xx_device_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_deps = [ ":startup_stm32h7xx" ]
 }
 
 group("default") {

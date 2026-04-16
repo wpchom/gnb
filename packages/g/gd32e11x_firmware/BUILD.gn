@@ -6,15 +6,18 @@ declare_args() {
 if (gd32e11x_firmware_pkgsrc != "") {
   gd32e11x_firmware_pkgdir = gd32e11x_firmware_pkgsrc
 } else {
-  gd32e11x_firmware_pkgdir = exec_script(gnb_pkgload,
-                                         [
-                                           "gd32e11x_firmware",
-                                           "--version",
-                                           gd32e11x_firmware_pkgver,
-                                           "--pkgs_dir",
-                                           gnb_pkgs_dir,
-                                         ],
-                                         "string")
+  gd32e11x_firmware_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "gd32e11x_firmware:${gd32e11x_firmware_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+  gd32e11x_firmware_pkgret = string_split(gd32e11x_firmware_pkgret, ":")
+  gd32e11x_firmware_pkgver = gd32e11x_firmware_pkgret[0]
+  gd32e11x_firmware_pkgdir =
+      gd32e11x_firmware_pkgret[1] + "/GD32E11x_Firmware_Library/Firmware"
 }
 
 declare_args() {
@@ -46,6 +49,7 @@ static_library("gd32e11x_firmware") {
   sources = [
     "${gd32e11x_firmware_pkgdir}/CMSIS/GD/GD32E11x/Source/system_gd32e11x.c",
     "src/gd32e11x_redirect.c",
+    "src/startup_gd32e11x.c",
   ]
 
   defines = []

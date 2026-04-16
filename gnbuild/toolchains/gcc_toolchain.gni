@@ -3,6 +3,7 @@ declare_args() {
     "-fdiagnostics-color=always",
     "-fmessage-length=0",
     "-fno-common",
+    "-fPIC",
   ]
 
   profile_asmflags = []

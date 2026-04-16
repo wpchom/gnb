@@ -1,0 +1,20 @@
+{
+    "name": "lvgl",
+    "versions": [
+        {
+            "version": "9.5.0",
+            "url": {
+                "*": "https://github.com/lvgl/lvgl/archive/refs/tags/v{version}.tar.gz"
+            },
+            "dir": {
+                "*": "lvgl-{version}"
+            }
+        },
+        {
+            "version": "9.4.0"
+        },
+        {
+            "version": "9.3.0"
+        }
+    ]
+}
