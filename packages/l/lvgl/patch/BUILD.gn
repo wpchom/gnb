@@ -1,0 +1,16 @@
+pkggroup("mds") {
+}
+
+config("lv_mds_cfg") {
+  include_dirs = [ "./" ]
+}
+
+source_set("lv_mds") {
+  sources = [ "lv_mds.c" ]
+
+  configs = [ "../:lvgl_cfg" ]
+
+  public_configs = [ ":lv_mds_cfg" ]
+
+  public_deps = [ ":mds" ]
+}

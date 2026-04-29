@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32h750xx.c
- * @brief       stm32h750xx startup source
+ * @file        startup_stm32h730xx.c
+ * @brief       stm32h730xx startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32h750xx.h"
+#include "stm32h730xx.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -114,7 +114,7 @@ __attribute__((weak, alias("Default_Handler"))) void OTG_HS_EP1_OUT_IRQHandler(v
 __attribute__((weak, alias("Default_Handler"))) void OTG_HS_EP1_IN_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void OTG_HS_WKUP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void OTG_HS_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void DCMI_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DCMI_PSSI_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CRYP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void HASH_RNG_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void FPU_IRQHandler(void);
@@ -127,37 +127,23 @@ __attribute__((weak, alias("Default_Handler"))) void SAI1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LTDC_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LTDC_ER_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA2D_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void SAI2_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void QUADSPI_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OCTOSPI1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LPTIM1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CEC_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void I2C4_EV_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void I2C4_ER_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SPDIF_RX_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void OTG_FS_EP1_OUT_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void OTG_FS_EP1_IN_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void OTG_FS_WKUP_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void OTG_FS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMAMUX1_OVR_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_Master_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_TIMA_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_TIMB_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_TIMC_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_TIMD_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_TIME_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HRTIM1_FLT_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DFSDM1_FLT0_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DFSDM1_FLT1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DFSDM1_FLT2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DFSDM1_FLT3_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void SAI3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SWPMI1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM15_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM16_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM17_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void MDIOS_WKUP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void MDIOS_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void JPEG_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void MDMA_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SDMMC2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void HSEM1_IRQHandler(void);
@@ -180,7 +166,21 @@ __attribute__((weak, alias("Default_Handler"))) void LPUART1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CRS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void ECC_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SAI4_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DTS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void WAKEUP_PIN_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OCTOSPI2_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OTFDEC1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OTFDEC2_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void FMAC_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CORDIC_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void UART9_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void USART10_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void I2C5_EV_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void I2C5_ER_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void FDCAN3_IT0_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void FDCAN3_IT1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM23_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM24_IRQHandler(void);
 
 /* Vector ------------------------------------------------------------------ */
 static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
@@ -280,7 +280,7 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     OTG_HS_EP1_IN_IRQHandler,
     OTG_HS_WKUP_IRQHandler,
     OTG_HS_IRQHandler,
-    DCMI_IRQHandler,
+    DCMI_PSSI_IRQHandler,
     CRYP_IRQHandler,
     HASH_RNG_IRQHandler,
     FPU_IRQHandler,
@@ -293,37 +293,37 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     LTDC_IRQHandler,
     LTDC_ER_IRQHandler,
     DMA2D_IRQHandler,
-    SAI2_IRQHandler,
-    QUADSPI_IRQHandler,
+    0,
+    OCTOSPI1_IRQHandler,
     LPTIM1_IRQHandler,
     CEC_IRQHandler,
     I2C4_EV_IRQHandler,
     I2C4_ER_IRQHandler,
     SPDIF_RX_IRQHandler,
-    OTG_FS_EP1_OUT_IRQHandler,
-    OTG_FS_EP1_IN_IRQHandler,
-    OTG_FS_WKUP_IRQHandler,
-    OTG_FS_IRQHandler,
+    0,
+    0,
+    0,
+    0,
     DMAMUX1_OVR_IRQHandler,
-    HRTIM1_Master_IRQHandler,
-    HRTIM1_TIMA_IRQHandler,
-    HRTIM1_TIMB_IRQHandler,
-    HRTIM1_TIMC_IRQHandler,
-    HRTIM1_TIMD_IRQHandler,
-    HRTIM1_TIME_IRQHandler,
-    HRTIM1_FLT_IRQHandler,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
     DFSDM1_FLT0_IRQHandler,
     DFSDM1_FLT1_IRQHandler,
     DFSDM1_FLT2_IRQHandler,
     DFSDM1_FLT3_IRQHandler,
-    SAI3_IRQHandler,
+    0,
     SWPMI1_IRQHandler,
     TIM15_IRQHandler,
     TIM16_IRQHandler,
     TIM17_IRQHandler,
     MDIOS_WKUP_IRQHandler,
     MDIOS_IRQHandler,
-    JPEG_IRQHandler,
+    0,
     MDMA_IRQHandler,
     0,
     SDMMC2_IRQHandler,
@@ -349,9 +349,22 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     CRS_IRQHandler,
     ECC_IRQHandler,
     SAI4_IRQHandler,
+    DTS_IRQHandler,
     0,
-    0,
-    WAKEUP_PIN_IRQHandler
+    WAKEUP_PIN_IRQHandler,
+    OCTOSPI2_IRQHandler,
+    OTFDEC1_IRQHandler,
+    OTFDEC2_IRQHandler,
+    FMAC_IRQHandler,
+    CORDIC_IRQHandler,
+    UART9_IRQHandler,
+    USART10_IRQHandler,
+    I2C5_EV_IRQHandler,
+    I2C5_ER_IRQHandler,
+    FDCAN3_IT0_IRQHandler,
+    FDCAN3_IT1_IRQHandler,
+    TIM23_IRQHandler,
+    TIM24_IRQHandler
 };
 
 /* Function ---------------------------------------------------------------- */

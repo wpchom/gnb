@@ -1,10 +1,10 @@
 {
-    "name": "drv_chip_gd32h7xx",
+    "name": "drv_chip_gd32h77x",
     "versions": [
         {
             "version": "master",
             "url": {
-                "*": "https://github.com/wpchom/drv_chip_gd32h7xx.git"
+                "*": "https://github.com/wpchom/drv_chip_gd32h77x.git"
             }
         }
     ]

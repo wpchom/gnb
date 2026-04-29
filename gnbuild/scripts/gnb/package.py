@@ -427,19 +427,6 @@ def action(args):
             _pkg_list(args)
 
 
-"""
-url
-curl -o packages/.tmp/resource/x/xxx/(version).tmp/(download_filename).zip
-mv .. packages/.tmp/resource/x/xxx/(version).zip
-
-extract
-packages/.tmp/resource/x/xxx/(version)/....
-
-git
-packages/.tmp/resource/x/xxx/(version)/.git
-git clone ... packages/.tmp/resource/x/xxx/(version)
-"""
-
 _EXTRACT_EXTENSIONS = [
     ".tar.gz",
     ".tar.bz2",

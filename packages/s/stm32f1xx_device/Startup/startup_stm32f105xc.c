@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32f103xb.c
- * @brief       stm32f103xb startup source
+ * @file        startup_stm32f105xc.c
+ * @brief       stm32f105xc startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32f103xb.h"
+#include "stm32f105xc.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -60,8 +60,8 @@ __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel5_IRQHandler(vo
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel6_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel7_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void ADC1_2_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void USB_HP_CAN1_TX_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void USB_LP_CAN1_RX0_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN1_TX_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN1_RX0_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CAN1_RX1_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CAN1_SCE_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void EXTI9_5_IRQHandler(void);
@@ -83,7 +83,23 @@ __attribute__((weak, alias("Default_Handler"))) void USART2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void USART3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void EXTI15_10_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void RTC_Alarm_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void USBWakeUp_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OTG_FS_WKUP_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM5_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void SPI3_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void UART4_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void UART5_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM6_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM7_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel2_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel3_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel4_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel5_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN2_TX_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN2_RX0_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN2_RX1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CAN2_SCE_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void OTG_FS_IRQHandler(void);
 
 /* Vector ------------------------------------------------------------------ */
 static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
@@ -124,8 +140,8 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     DMA1_Channel6_IRQHandler,
     DMA1_Channel7_IRQHandler,
     ADC1_2_IRQHandler,
-    USB_HP_CAN1_TX_IRQHandler,
-    USB_LP_CAN1_RX0_IRQHandler,
+    CAN1_TX_IRQHandler,
+    CAN1_RX0_IRQHandler,
     CAN1_RX1_IRQHandler,
     CAN1_SCE_IRQHandler,
     EXTI9_5_IRQHandler,
@@ -147,7 +163,7 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     USART3_IRQHandler,
     EXTI15_10_IRQHandler,
     RTC_Alarm_IRQHandler,
-    USBWakeUp_IRQHandler,
+    OTG_FS_WKUP_IRQHandler,
     0,
     0,
     0,
@@ -155,8 +171,62 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     0,
     0,
-    /* @0x0108. This is for boot in RAM mode for STM32F10x Medium Density devices. */
-    (void *)0xF108F85F
+    TIM5_IRQHandler,
+    SPI3_IRQHandler,
+    UART4_IRQHandler,
+    UART5_IRQHandler,
+    TIM6_IRQHandler,
+    TIM7_IRQHandler,
+    DMA2_Channel1_IRQHandler,
+    DMA2_Channel2_IRQHandler,
+    DMA2_Channel3_IRQHandler,
+    DMA2_Channel4_IRQHandler,
+    DMA2_Channel5_IRQHandler,
+    0,
+    0,
+    CAN2_TX_IRQHandler,
+    CAN2_RX0_IRQHandler,
+    CAN2_RX1_IRQHandler,
+    CAN2_SCE_IRQHandler,
+    OTG_FS_IRQHandler,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    /* @0x01E0. This is for boot in RAM mode for STM32F10x Connectivity Line devices. */
+    (void *)0xF1E0F85F
 };
 
 /* Function ---------------------------------------------------------------- */

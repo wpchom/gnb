@@ -19,6 +19,7 @@ target("stm32f1xx_device", function()
 
     on_load(function(target)
         target:add("defines", get_config("device"), { public = true })
+        target:add("files", path.join("Startup", "syscalls.c"))
         target:add("files", path.join("Startup", "startup_" .. string.lower(get_config("device")) .. ".c"))
     end)
 end)

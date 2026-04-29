@@ -22,6 +22,7 @@ if (stm32h7xx_device_pkgsrc != "") {
 declare_args() {
   stm32h7xx_device_pkgcfg = {
     # device
+    # core = cm7
   }
 }
 
@@ -35,14 +36,64 @@ config("stm32h7xx_device_cfg") {
   assert(defined(stm32h7xx_device_pkgcfg.device),
          "`stm32h7xx_device_pkgcfg.device` must be set")
   defines = [ "${stm32h7xx_device_pkgcfg.device}" ]
+
+  if (defined(stm32h7xx_device_pkgcfg.core) &&
+      stm32h7xx_device_pkgcfg.core == "cm4") {
+    defines += [ "CORE_CM4" ]
+  } else {
+    defines += [ "CORE_CM7" ]
+  }
 }
 
 source_set("startup_stm32h7xx") {
-  sources = []
+  sources = [ "Startup/syscalls.c" ]
 
-  if (stm32h7xx_device_pkgcfg.device == "STM32H750xx") {
+  if (stm32h7xx_device_pkgcfg.device == "STM32H723xx") {
+    sources += [ "Startup/startup_stm32h723xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H725xx") {
+    sources += [ "Startup/startup_stm32h725xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H730xx") {
+    sources += [ "Startup/startup_stm32h730xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H730xxQ") {
+    sources += [ "Startup/startup_stm32h730xxq.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H733xx") {
+    sources += [ "Startup/startup_stm32h733xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H735xx") {
+    sources += [ "Startup/startup_stm32h735xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H742xx") {
+    sources += [ "Startup/startup_stm32h742xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H743xx") {
+    sources += [ "Startup/startup_stm32h743xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H745xx") {
+    sources += [ "Startup/startup_stm32h745xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H745xG") {
+    sources += [ "Startup/startup_stm32h745xg.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H747xx") {
+    sources += [ "Startup/startup_stm32h747xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H747xG") {
+    sources += [ "Startup/startup_stm32h747xg.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H750xx") {
     sources += [ "Startup/startup_stm32h750xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H753xx") {
+    sources += [ "Startup/startup_stm32h753xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H755xx") {
+    sources += [ "Startup/startup_stm32h755xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H757xx") {
+    sources += [ "Startup/startup_stm32h757xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7A3xx") {
+    sources += [ "Startup/startup_stm32h7a3xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7A3xxQ") {
+    sources += [ "Startup/startup_stm32h7a3xxq.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7B0xx") {
+    sources += [ "Startup/startup_stm32h7b0xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7B0xxQ") {
+    sources += [ "Startup/startup_stm32h7b0xxq.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7B3xx") {
+    sources += [ "Startup/startup_stm32h7b3xx.c" ]
+  } else if (stm32h7xx_device_pkgcfg.device == "STM32H7B3xxQ") {
+    sources += [ "Startup/startup_stm32h7b3xxq.c" ]
   } else {
+    assert("device is not support")
   }
 
   public_configs = [ ":stm32h7xx_device_cfg" ]

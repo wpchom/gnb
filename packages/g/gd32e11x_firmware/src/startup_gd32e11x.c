@@ -12,7 +12,7 @@ void __INITIAL_SP(void);
 void __STACK_LIMIT(void);
 void Reset_Handler(void);
 
-/* Interrupt --------------------------------------------------------------- */
+/* Handler ----------------------------------------------------------------- */
 __attribute__((weak)) void Interrupt_Handler(uintptr_t ipsr)
 {
     (void)(ipsr);
@@ -29,6 +29,7 @@ void Default_Handler(void)
     Interrupt_Handler(ipsr);
 }
 
+/* Exception --------------------------------------------------------------- */
 __attribute__((weak, alias("Default_Handler"))) void NMI_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void HardFault_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void MemManage_Handler(void);
@@ -39,6 +40,7 @@ __attribute__((weak, alias("Default_Handler"))) void DebugMon_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void PendSV_Handler(void);
 __attribute__((weak, alias("Default_Handler"))) void SysTick_Handler(void);
 
+/* Interrupt --------------------------------------------------------------- */
 __attribute__((weak, alias("Default_Handler"))) void WWDGT_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LVD_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TAMPER_IRQHandler(void);
@@ -96,7 +98,9 @@ __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel3_IRQHandler(vo
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel4_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void USBFS_IRQHandler(void);
 
+/* Vector ------------------------------------------------------------------ */
 static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
+    // Exception
     (void *)(&__INITIAL_SP),
     Reset_Handler,
     NMI_Handler,
@@ -113,7 +117,7 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     PendSV_Handler,
     SysTick_Handler,
-
+    // Interrupt
     WWDGT_IRQHandler,
     LVD_IRQHandler,
     TAMPER_IRQHandler,
@@ -181,11 +185,11 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     0,
     0,
-    USBFS_IRQHandler,
+    USBFS_IRQHandler
 };
 
 /* Function ---------------------------------------------------------------- */
-__attribute__((weak)) void VectorInit(uintptr_t vectorAddress)
+__attribute__((weak)) void VectorInit(uintptr_t vector)
 {
     SysTick->CTRL = 0U;
     SysTick->LOAD = 0U;
@@ -195,7 +199,7 @@ __attribute__((weak)) void VectorInit(uintptr_t vectorAddress)
         NVIC->ICER[idx] = 0xFFFFFFFF;
     }
 
-    SCB->VTOR = vectorAddress;
+    SCB->VTOR = vector;
 }
 
 __attribute__((naked, noreturn)) void Reset_Handler(void)
@@ -206,47 +210,9 @@ __attribute__((naked, noreturn)) void Reset_Handler(void)
 
     SystemInit();
 
-    VectorInit((uintptr_t)__VECTOR_TABLE);
+    VectorInit((uint32_t)__VECTOR_TABLE);
 
     __enable_irq();
 
     __PROGRAM_START();
-}
-
-__attribute__((noreturn)) void DRV_CHIP_JumpIntoVectorAddress(uintptr_t vectorAddress)
-{
-    typedef void (*vector_t)(void);
-    vector_t *vectorTable = (vector_t *)(vectorAddress);
-
-    __disable_irq();
-
-    __set_MSP((uint32_t)(vectorTable[0]));
-
-    VectorInit(vectorAddress);
-
-    __enable_irq();
-
-    vectorTable[1]();
-
-    for (;;) {
-    }
-}
-
-__attribute__((noreturn)) void DRV_CHIP_JumpIntoDFU(void)
-{
-    DRV_CHIP_JumpIntoVectorAddress(0x1FFFF000);
-}
-
-__attribute__((noreturn)) void DRV_CHIP_SystemReset(void)
-{
-    NVIC_SystemReset();
-}
-
-// gcc
-__attribute__((weak, noreturn)) void _exit(int status)
-{
-    (void)(status);
-    for (;;) {
-        __WFI();
-    }
 }

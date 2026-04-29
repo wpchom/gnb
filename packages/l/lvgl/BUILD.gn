@@ -23,6 +23,7 @@ declare_args() {
     confile = ""
     confdir = ""
     libnemagfx = ""
+    mds = false
   }
 }
 
@@ -30,7 +31,7 @@ declare_toolchain(profile_toolchain) {
 }
 
 config("lvgl_cfg") {
-  include_dirs = [ "${lvgl_pkgdir}" ]
+  include_dirs = [ "${lvgl_pkgdir}/src" ]
 
   defines = []
 
@@ -42,6 +43,24 @@ config("lvgl_cfg") {
   } else {
     defines += [ "LV_CONF_INCLUDE_SIMPLE" ]
     include_dirs += [ rebase_path("./") ]
+  }
+}
+
+config("lvgl_demos_cfg") {
+  include_dirs = [ "${lvgl_pkgdir}/demos" ]
+}
+
+config("lvgl_examples_cfg") {
+  include_dirs = [ "${lvgl_pkgdir}/examples" ]
+}
+
+group("lvgl_deps") {
+  public_configs = [ ":lvgl_cfg" ]
+
+  public_deps = []
+
+  if (defined(lvgl_pkgcfg.mds) && lvgl_pkgcfg.mds) {
+    public_deps += [ "patch/:lv_mds" ]
   }
 }
 
@@ -94,7 +113,7 @@ source_set("lvgl_display") {
     "${lvgl_pkgdir}/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c",
   ]
 
-  configs = [ ":lvgl_cfg" ]
+  deps = [ ":lvgl_deps" ]
 }
 
 source_set("lvgl_osal") {
@@ -125,7 +144,7 @@ source_set("lvgl_osal") {
     # "${lvgl_pkgdir}/src/osal/lv_os_custom.c",
   ]
 
-  configs = [ ":lvgl_cfg" ]
+  deps = [ ":lvgl_deps" ]
 }
 
 source_set("lvgl_acceleration") {
@@ -264,7 +283,7 @@ source_set("lvgl_acceleration") {
     }
   }
 
-  configs = [ ":lvgl_cfg" ]
+  deps = [ ":lvgl_deps" ]
 }
 
 source_set("lvgl_libs") {
@@ -419,7 +438,7 @@ source_set("lvgl_libs") {
     "${lvgl_pkgdir}/src/draw/snapshot/lv_snapshot.c",
   ]
 
-  configs = [ ":lvgl_cfg" ]
+  deps = [ ":lvgl_deps" ]
 }
 
 source_set("lvgl_thorvg") {
@@ -478,7 +497,7 @@ source_set("lvgl_thorvg") {
 
   cflags = [ "-Wno-unused-parameter" ]
 
-  configs = [ ":lvgl_cfg" ]
+  deps = [ ":lvgl_deps" ]
 }
 
 static_library("lvgl") {
@@ -823,6 +842,8 @@ static_library("lvgl") {
     "${lvgl_pkgdir}/src/osal/lv_os_none.c",
   ]
 
+  cflags = [ "-Wno-double-promotion" ]
+
   deps = [
     ":lvgl_acceleration",
     ":lvgl_display",
@@ -831,7 +852,7 @@ static_library("lvgl") {
     ":lvgl_thorvg",
   ]
 
-  public_configs = [ ":lvgl_cfg" ]
+  public_deps = [ ":lvgl_deps" ]
 }
 
 static_library("lvgl_demos") {
@@ -950,6 +971,8 @@ static_library("lvgl_demos") {
   ]
 
   public_deps = [ ":lvgl" ]
+
+  public_configs = [ ":lvgl_demos_cfg" ]
 }
 
 static_library("lvgl_examples") {
@@ -964,6 +987,8 @@ static_library("lvgl_examples") {
   ]
 
   public_deps = [ ":lvgl" ]
+
+  public_configs = [ ":lvgl_examples_cfg" ]
 }
 
 group("default") {

@@ -42,7 +42,7 @@ python3 gnb.py [build] [target] [-b <builddir>] [-p <profile>] [-o <outdir>] [--
 说明：生成时自动导出 `compile_commands.json` 以便 IDE 使用。
 
 ## 清理
-缓存目录在`packages/.tmp`中，包含`buildout`构建输出、`download`下载缓存、`resource`资源数据；
+缓存目录在`~/.gnbuild`中，包含`buildout`构建输出、`download`下载缓存、`resource`资源数据；
 ```shell
 python3 gnb.py clean <outdir>
 ```
@@ -91,4 +91,4 @@ python3 gnb.py package ninja --list
 ## 代码参考
 - 构建入口：`scripts/gnb/build.py` 中 `build_action` 调用 GN/Ninja（scripts/gnb/build.py:97）
 - 包管理：`scripts/gnb/package.py` 子命令与版本语法（scripts/gnb/package.py:360）
-- Profile 默认与工具链：`gnbuild/profiles/debug.gn`、`gnbuild/toolchain.gni`
+- Profile 默认与工具链：`gnbuild/profiles/release.gn`、`gnbuild/toolchain.gni`

@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32f103xb.c
- * @brief       stm32f103xb startup source
+ * @file        startup_stm32f103xe.c
+ * @brief       stm32f103xe startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32f103xb.h"
+#include "stm32f103xe.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -84,6 +84,23 @@ __attribute__((weak, alias("Default_Handler"))) void USART3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void EXTI15_10_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void RTC_Alarm_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void USBWakeUp_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM8_BRK_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM8_UP_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM8_TRG_COM_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM8_CC_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void ADC3_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void FSMC_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void SDIO_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM5_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void SPI3_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void UART4_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void UART5_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM6_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void TIM7_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel2_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel3_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DMA2_Channel4_5_IRQHandler(void);
 
 /* Vector ------------------------------------------------------------------ */
 static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
@@ -148,6 +165,23 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     EXTI15_10_IRQHandler,
     RTC_Alarm_IRQHandler,
     USBWakeUp_IRQHandler,
+    TIM8_BRK_IRQHandler,
+    TIM8_UP_IRQHandler,
+    TIM8_TRG_COM_IRQHandler,
+    TIM8_CC_IRQHandler,
+    ADC3_IRQHandler,
+    FSMC_IRQHandler,
+    SDIO_IRQHandler,
+    TIM5_IRQHandler,
+    SPI3_IRQHandler,
+    UART4_IRQHandler,
+    UART5_IRQHandler,
+    TIM6_IRQHandler,
+    TIM7_IRQHandler,
+    DMA2_Channel1_IRQHandler,
+    DMA2_Channel2_IRQHandler,
+    DMA2_Channel3_IRQHandler,
+    DMA2_Channel4_5_IRQHandler,
     0,
     0,
     0,
@@ -155,8 +189,45 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     0,
     0,
-    /* @0x0108. This is for boot in RAM mode for STM32F10x Medium Density devices. */
-    (void *)0xF108F85F
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    /* @0x01E0. This is for boot in RAM mode for STM32F10x High Density devices. */
+    (void *)0xF1E0F85F
 };
 
 /* Function ---------------------------------------------------------------- */

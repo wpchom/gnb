@@ -1,0 +1,269 @@
+declare_args() {
+  riscv32_esp_elf_gcc_pkgver = ""
+  riscv32_esp_elf_gcc_pkgsrc = ""
+}
+
+declare_args() {
+  profile_common_flags = [
+    "-fdiagnostics-color=always",
+    "-fmessage-length=0",
+    "-fno-common",
+  ]
+
+  profile_asmflags = []
+  profile_cflags = []
+  profile_cflags_c = []
+  profile_cflags_cc = []
+  profile_arflags = []
+  profile_ldflags = []
+}
+
+if (riscv32_esp_elf_gcc_pkgsrc != "") {
+  riscv32_esp_elf_gcc_pkgdir = riscv32_esp_elf_gcc_pkgsrc
+} else {
+  riscv32_esp_elf_gcc_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "riscv32-esp-elf-gcc:${riscv32_esp_elf_gcc_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+
+  riscv32_esp_elf_gcc_pkgret = string_split(riscv32_esp_elf_gcc_pkgret, ":")
+  riscv32_esp_elf_gcc_pkgver = riscv32_esp_elf_gcc_pkgret[0]
+  riscv32_esp_elf_gcc_pkgdir = riscv32_esp_elf_gcc_pkgret[1]
+}
+
+template("riscv32_esp_elf_toolchain") {
+  not_needed(invoker, "*")
+
+  toolchain(target_name) {
+    if (defined(invoker.ccache)) {
+      ccache = invoker.ccache
+    } else {
+      ccache = exec_script(gnb_which,
+                           [
+                             "ccache",
+                             "sccache",
+                           ],
+                           "string")
+    }
+
+    if (defined(invoker.prefix)) {
+      prefix = invoker.prefix
+    } else {
+      prefix = "riscv32-esp-elf-"
+    }
+
+    if (host_os == "win") {
+      bin_ext = ".exe"
+    } else {
+      bin_ext = ""
+    }
+
+    if (defined(invoker.bindir)) {
+      asm = rebase_path("${prefix}gcc${bin_ext}", "", invoker.bindir)
+      cc = rebase_path("${prefix}gcc${bin_ext}", "", invoker.bindir)
+      cxx = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+      alink = rebase_path("${prefix}ar${bin_ext}", "", invoker.bindir)
+      solink = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+      link = rebase_path("${prefix}g++${bin_ext}", "", invoker.bindir)
+    } else {
+      asm = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cc = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}gcc${bin_ext}"
+      cxx = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      alink = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}ar${bin_ext}"
+      solink = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+      link = "${riscv32_esp_elf_gcc_pkgdir}/bin/${prefix}g++${bin_ext}"
+    }
+
+    toolchain_asmflags = profile_common_flags + profile_asmflags
+    if (defined(invoker.asmflags)) {
+      toolchain_asmflags += invoker.asmflags
+    }
+    toolchain_asmflags = string_join(" ", toolchain_asmflags)
+
+    toolchain_cflags = profile_common_flags + profile_cflags
+    if (defined(invoker.cflags)) {
+      toolchain_cflags += invoker.cflags
+    }
+    toolchain_cflags = string_join(" ", toolchain_cflags)
+
+    toolchain_cflags_c = profile_cflags_c
+    if (defined(invoker.cflags_c)) {
+      toolchain_cflags_c += invoker.cflags_c
+    }
+    toolchain_cflags_c = string_join(" ", toolchain_cflags_c)
+
+    toolchain_cflags_cc = profile_cflags_cc
+    if (defined(invoker.cflags_cc)) {
+      toolchain_cflags_cc += invoker.cflags_cc
+    }
+    toolchain_cflags_cc = string_join(" ", toolchain_cflags_cc)
+
+    toolchain_arflags = profile_arflags
+    if (defined(invoker.arflags)) {
+      toolchain_arflags += invoker.arflags
+    }
+    toolchain_arflags = string_join(" ", toolchain_arflags)
+
+    toolchain_ldflags = profile_common_flags + profile_ldflags
+    if (defined(invoker.ldflags)) {
+      toolchain_ldflags += invoker.ldflags
+    }
+    toolchain_ldflags = string_join(" ", toolchain_ldflags)
+
+    lib_switch = "-l"
+    lib_dir_switch = "-L"
+
+    whole_archive_flag = "-Wl,--whole-archive"
+
+    gcc_version = exec_script(gnb_pkgexec,
+                              [
+                                "${cc}",
+                                "--version",
+                              ],
+                              "string")
+    foreach(str, string_split(gcc_version, " ")) {
+      if (str == "clang") {
+        whole_archive_flag = ""
+      }
+    }
+
+    tool("asm") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${asm} -MMD -MF ${depfile} ${toolchain_asmflags} {{asmflags}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
+      description = "AS {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cc") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${cc} -MMD -MF ${depfile} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_c} {{cflags_c}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
+      description = "CC {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("cxx") {
+      depfile = "{{output}}.d"
+      depsformat = "gcc"
+
+      command = "${ccache} ${cxx} -MMD -MF ${depfile} ${toolchain_cflags} {{cflags}} ${toolchain_cflags_cc} {{cflags_cc}} {{defines}} {{include_dirs}} -c {{source}} -o {{output}}"
+      description = "CXX {{output}}"
+
+      outputs = [ "{{source_out_dir}}/{{source_name_part}}.o" ]
+    }
+
+    tool("alink") {
+      command = "${ccache} ${alink} ${toolchain_arflags} {{arflags}} -rcsD {{output}} {{inputs}}"
+      description = "AR {{output}}"
+
+      outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
+      default_output_dir = "{{target_out_dir}}"
+      default_output_extension = ".a"
+      output_prefix = "lib"
+    }
+
+    tool("solink") {
+      soname = "{{target_output_name}}{{output_extension}}"
+      sofile = "{{output_dir}}/${soname}"
+
+      if (whole_archive_flag == "") {
+        soname_flag = ""
+        rspfile_flag = "{{inputs}} {{solibs}} {{libs}}"
+      } else {
+        soname_flag = "-Wl,-soname,${soname}"
+        rspfile_flag = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
+      }
+
+      command = "${ccache} ${solink} -shared ${toolchain_ldflags} {{ldflags}} ${soname_flag} -o \"${sofile}\" ${rspfile_flag}"
+      description = "SOLINK ${sofile}"
+
+      link_output = sofile
+      depend_output = sofile
+
+      outputs = [ sofile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".so"
+      output_prefix = "lib"
+    }
+
+    tool("link") {
+      outname = "{{target_output_name}}{{output_extension}}"
+      outfile = "{{output_dir}}/${outname}"
+
+      if (whole_archive_flag == "") {
+        rspfile_flag = "{{inputs}} {{solibs}} {{libs}}"
+      } else {
+        rspfile_flag = "-Wl,--start-group -Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}} -Wl,--end-group"
+      }
+
+      command = "${ccache} ${link} ${toolchain_ldflags} {{ldflags}} -o \"${outfile}\" ${rspfile_flag}"
+      description = "LINK ${outfile}"
+
+      outputs = [ outfile ]
+      default_output_dir = "{{root_out_dir}}"
+      default_output_extension = ".elf"
+    }
+
+    tool("stamp") {
+      if (host_os == "win") {
+        command = "cmd /c type nul > {{output}}"
+      } else {
+        command = "touch {{output}}"
+      }
+      description = "STAMP {{output}}"
+    }
+
+    tool("copy") {
+      if (host_os == "win") {
+        command = "cmd /c copy /Y {{source}} {{output}}"
+      } else {
+        command = "cp -af {{source}} {{output}}"
+      }
+      description = "COPY {{source}} {{output}}"
+    }
+  }
+}
+
+template("toolchain_action") {
+  action(target_name) {
+    assert(invoker.script != "")
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "script",
+                             "args",
+                           ])
+
+    script = gnb_pkgexec
+    args = []
+
+    if (host_os == "win") {
+      script_bin = invoker.script + ".exe"
+    } else {
+      script_bin = invoker.script
+    }
+
+    args += [ rebase_path("riscv32-esp-elf-" + script_bin,
+                          "",
+                          "${riscv32_esp_elf_gcc_pkgdir}/bin") ]
+
+    if (defined(invoker.args)) {
+      args += invoker.args
+    }
+  }
+}
+
+template("declare_toolchain") {
+  not_needed(invoker, "*")
+  riscv32_esp_elf_toolchain(target_name) {
+  }
+}

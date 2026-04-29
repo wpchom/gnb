@@ -17,13 +17,14 @@ if (gd32e11x_firmware_pkgsrc != "") {
   gd32e11x_firmware_pkgret = string_split(gd32e11x_firmware_pkgret, ":")
   gd32e11x_firmware_pkgver = gd32e11x_firmware_pkgret[0]
   gd32e11x_firmware_pkgdir =
-      gd32e11x_firmware_pkgret[1] + "/GD32E11x_Firmware_Library/Firmware"
+      gd32e11x_firmware_pkgret[1] +
+      "/GD32E11x_Firmware_Library_V${gd32e11x_firmware_pkgver}"
 }
 
 declare_args() {
   gd32e11x_firmware_pkgcfg = {
     hxtal_value = 8000000
-    system_clock = "__SYSTEM_CLOCK_IRC8M"
+    system_clock = "__SYSTEM_CLOCK_IRC8M=8000000"
   }
 }
 
@@ -33,9 +34,9 @@ pkggroup("cmsis") {
 
 config("gd32e11x_firmware_cfg") {
   include_dirs = [
-    "${gd32e11x_firmware_pkgdir}/CMSIS/GD/GD32E11x/Include",
-    "${gd32e11x_firmware_pkgdir}/GD32E11x_standard_peripheral/Include",
-    "include",
+    "${gd32e11x_firmware_pkgdir}/Firmware/CMSIS/GD/GD32E11x/Include",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Include",
+    "${gd32e11x_firmware_pkgdir}/Template",
   ]
 
   defines = [ "GD32E11X" ]
@@ -47,9 +48,33 @@ config("gd32e11x_firmware_cfg") {
 
 static_library("gd32e11x_firmware") {
   sources = [
-    "${gd32e11x_firmware_pkgdir}/CMSIS/GD/GD32E11x/Source/system_gd32e11x.c",
-    "src/gd32e11x_redirect.c",
     "src/startup_gd32e11x.c",
+    "src/syscalls.c",
+  ]
+
+  sources += [
+    "${gd32e11x_firmware_pkgdir}/Firmware/CMSIS/GD/GD32E11x/Source/system_gd32e11x.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_adc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_bkp.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_crc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_ctc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_dac.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_dbg.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_dma.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_exmc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_exti.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_fmc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_fwdgt.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_gpio.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_i2c.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_misc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_pmu.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_rcu.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_rtc.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_spi.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_timer.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_usart.c",
+    "${gd32e11x_firmware_pkgdir}/Firmware/GD32E11x_standard_peripheral/Source/gd32e11x_wwdgt.c",
   ]
 
   defines = []

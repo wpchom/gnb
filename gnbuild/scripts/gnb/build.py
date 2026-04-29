@@ -41,7 +41,7 @@ def parser(subparsers):
     _parser_arguments(parser)
 
 
-def get_profile(repo_dir, builddir, profile, default="debug.gn"):
+def get_profile(repo_dir, builddir, profile, default="release.gn"):
     if profile != None:
         gnpfile = os.path.join(builddir, "profiles", profile)
         if not gnpfile.endswith(".gn"):
@@ -61,7 +61,7 @@ def get_profile(repo_dir, builddir, profile, default="debug.gn"):
         if os.path.exists(default_profile):
             return default_profile
         else:
-            utils.error(f"Default profile `{default_profile}` not exists. ")
+            utils.error(f"Default profile `{default_profile}` not exists.")
 
 
 def action(args):
@@ -72,7 +72,9 @@ def action(args):
     else:
         args.builddir = os.path.abspath(os.getcwd())
 
-    args.profile = get_profile(args.repo_dir, args.builddir, args.profile)
+    args.profile = os.path.abspath(
+        get_profile(args.repo_dir, args.builddir, args.profile)
+    )
 
     if ("output" in args) and (args.output != None):
         args.output = os.path.abspath(args.output)
@@ -165,6 +167,6 @@ def run_build(
     # complete
     etime = time.perf_counter()
     if ret.returncode == 0:
-        utils.info(f"Building action finished cost time: {etime - stime:.3f}s")
+        utils.info(f"Building action finished cost time: {etime - stime:.3f}s\n")
     else:
-        utils.error(f"Building action error cost time: {etime - stime:.3f}s")
+        utils.error(f"Building action error cost time: {etime - stime:.3f}s\n")

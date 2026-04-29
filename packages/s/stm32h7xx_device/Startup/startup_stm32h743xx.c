@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32h750xx.c
- * @brief       stm32h750xx startup source
+ * @file        startup_stm32h743xx.c
+ * @brief       stm32h743xx startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32h750xx.h"
+#include "stm32h743xx.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -115,8 +115,7 @@ __attribute__((weak, alias("Default_Handler"))) void OTG_HS_EP1_IN_IRQHandler(vo
 __attribute__((weak, alias("Default_Handler"))) void OTG_HS_WKUP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void OTG_HS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DCMI_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void CRYP_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void HASH_RNG_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void RNG_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void FPU_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void UART7_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void UART8_IRQHandler(void);
@@ -281,8 +280,8 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     OTG_HS_WKUP_IRQHandler,
     OTG_HS_IRQHandler,
     DCMI_IRQHandler,
-    CRYP_IRQHandler,
-    HASH_RNG_IRQHandler,
+    0,
+    RNG_IRQHandler,
     FPU_IRQHandler,
     UART7_IRQHandler,
     UART8_IRQHandler,

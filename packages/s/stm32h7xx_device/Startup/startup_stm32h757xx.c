@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32h750xx.c
- * @brief       stm32h750xx startup source
+ * @file        startup_stm32h757xx.c
+ * @brief       stm32h757xx startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32h750xx.h"
+#include "stm32h757xx.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -104,6 +104,8 @@ __attribute__((weak, alias("Default_Handler"))) void DMA2_Stream4_IRQHandler(voi
 __attribute__((weak, alias("Default_Handler"))) void ETH_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void ETH_WKUP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void FDCAN_CAL_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CM7_SEV_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void CM4_SEV_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA2_Stream5_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA2_Stream6_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA2_Stream7_IRQHandler(void);
@@ -159,8 +161,10 @@ __attribute__((weak, alias("Default_Handler"))) void MDIOS_WKUP_IRQHandler(void)
 __attribute__((weak, alias("Default_Handler"))) void MDIOS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void JPEG_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void MDMA_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void DSI_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SDMMC2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void HSEM1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void HSEM2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void ADC3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMAMUX2_OVR_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void BDMA_Channel0_IRQHandler(void);
@@ -177,9 +181,11 @@ __attribute__((weak, alias("Default_Handler"))) void LPTIM3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LPTIM4_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LPTIM5_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void LPUART1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void WWDG_RST_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void CRS_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void ECC_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void SAI4_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void HOLD_CORE_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void WAKEUP_PIN_IRQHandler(void);
 
 /* Vector ------------------------------------------------------------------ */
@@ -266,8 +272,8 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     ETH_IRQHandler,
     ETH_WKUP_IRQHandler,
     FDCAN_CAL_IRQHandler,
-    0,
-    0,
+    CM7_SEV_IRQHandler,
+    CM4_SEV_IRQHandler,
     0,
     0,
     DMA2_Stream5_IRQHandler,
@@ -325,10 +331,10 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     MDIOS_IRQHandler,
     JPEG_IRQHandler,
     MDMA_IRQHandler,
-    0,
+    DSI_IRQHandler,
     SDMMC2_IRQHandler,
     HSEM1_IRQHandler,
-    0,
+    HSEM2_IRQHandler,
     ADC3_IRQHandler,
     DMAMUX2_OVR_IRQHandler,
     BDMA_Channel0_IRQHandler,
@@ -345,12 +351,12 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     LPTIM4_IRQHandler,
     LPTIM5_IRQHandler,
     LPUART1_IRQHandler,
-    0,
+    WWDG_RST_IRQHandler,
     CRS_IRQHandler,
     ECC_IRQHandler,
     SAI4_IRQHandler,
     0,
-    0,
+    HOLD_CORE_IRQHandler,
     WAKEUP_PIN_IRQHandler
 };
 

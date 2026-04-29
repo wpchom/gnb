@@ -53,4 +53,4 @@ def action(args):
             check=True,
         )
     except Exception as e:
-        utils.error(f"`git -C {utils.MDS_REPO_DIR} pull` failed", f"\n{str(e)}")
+        utils.error(f"`git -C {utils.MDS_REPO_DIR} fetch` failed", f"\n{str(e)}")

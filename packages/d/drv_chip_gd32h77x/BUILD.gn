@@ -1,0 +1,25 @@
+declare_args() {
+  drv_chip_gd32h77x_pkgver = ""
+  drv_chip_gd32h77x_pkgsrc = ""
+}
+
+if (drv_chip_gd32h77x_pkgsrc != "") {
+  drv_chip_gd32h77x_pkgdir = drv_chip_gd32h77x_pkgsrc
+} else {
+  drv_chip_gd32h77x_pkgret =
+      exec_script(gnb_pkgload,
+                  [
+                    "drv_chip_gd32h77x:${drv_chip_gd32h77x_pkgver}",
+                    "--pkgs_dir",
+                    gnb_pkgs_dir,
+                  ],
+                  "string")
+
+  drv_chip_gd32h77x_pkgret = string_split(drv_chip_gd32h77x_pkgret, ":")
+  drv_chip_gd32h77x_pkgver = drv_chip_gd32h77x_pkgret[0]
+  drv_chip_gd32h77x_pkgdir = drv_chip_gd32h77x_pkgret[1]
+}
+
+group("default") {
+  public_deps = [ "${drv_chip_gd32h77x_pkgdir}/:drv_chip_gd32h77x" ]
+}

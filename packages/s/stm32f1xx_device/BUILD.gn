@@ -37,17 +37,49 @@ config("stm32f1xx_device_cfg") {
   defines = [ "${stm32f1xx_device_pkgcfg.device}" ]
 }
 
-source_set("system_stm32f1xx") {
-  sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+source_set("startup_stm32f1xx") {
+  sources = [ "Startup/syscalls.c" ]
 
-  if (stm32f1xx_device_pkgcfg.device == "STM32F103xB") {
+  if (stm32f1xx_device_pkgcfg.device == "STM32F100xB") {
+    sources += [ "Startup/startup_stm32f100xb.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F100xE") {
+    sources += [ "Startup/startup_stm32f100xe.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F101x6") {
+    sources += [ "Startup/startup_stm32f101x6.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F101xB") {
+    sources += [ "Startup/startup_stm32f101xb.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F101xE") {
+    sources += [ "Startup/startup_stm32f101xe.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F101xG") {
+    sources += [ "Startup/startup_stm32f101xg.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F102x6") {
+    sources += [ "Startup/startup_stm32f102x6.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F102xB") {
+    sources += [ "Startup/startup_stm32f102xb.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F103x6") {
+    sources += [ "Startup/startup_stm32f103x6.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F103xB") {
     sources += [ "Startup/startup_stm32f103xb.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F103xE") {
+    sources += [ "Startup/startup_stm32f103xe.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F103xG") {
+    sources += [ "Startup/startup_stm32f103xg.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F105xC") {
+    sources += [ "Startup/startup_stm32f105xc.c" ]
+  } else if (stm32f1xx_device_pkgcfg.device == "STM32F107xC") {
+    sources += [ "Startup/startup_stm32f107xc.c" ]
   } else {
+    assert("device is not support")
   }
 
   public_configs = [ ":stm32f1xx_device_cfg" ]
-
   public_deps = [ ":cmsis" ]
+}
+
+source_set("system_stm32f1xx") {
+  sources = [ "${stm32f1xx_device_pkgdir}/Source/Templates/${target_name}.c" ]
+
+  public_deps = [ ":startup_stm32f1xx" ]
 }
 
 group("default") {

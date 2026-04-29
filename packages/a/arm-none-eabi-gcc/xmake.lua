@@ -47,8 +47,7 @@ package("arm-none-eabi-gcc", function()
     end
 
     on_install("@windows", "@linux", "@macosx", function(package)
-        print(package:get("urls"))
-        os.vcp("*|manifest.txt", package:installdir())
+        os.vcp("*", package:installdir())
     end)
 
     on_test(function(package)

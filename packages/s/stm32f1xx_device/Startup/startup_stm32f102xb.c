@@ -1,11 +1,11 @@
 /**
  * @copyright   Copyright (c) 2024 Pchom & licensed under Mulan PSL v2
- * @file        startup_stm32f103xb.c
- * @brief       stm32f103xb startup source
+ * @file        startup_stm32f102xb.c
+ * @brief       stm32f102xb startup source
  * @date        2024-05-30
  */
 /* Include ----------------------------------------------------------------- */
-#include "stm32f103xb.h"
+#include "stm32f102xb.h"
 
 /* Reference --------------------------------------------------------------- */
 void __INITIAL_SP(void);
@@ -59,16 +59,10 @@ __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel4_IRQHandler(vo
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel5_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel6_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void DMA1_Channel7_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void ADC1_2_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void USB_HP_CAN1_TX_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void USB_LP_CAN1_RX0_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void CAN1_RX1_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void CAN1_SCE_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void ADC1_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void USB_HP_IRQHandler(void);
+__attribute__((weak, alias("Default_Handler"))) void USB_LP_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void EXTI9_5_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void TIM1_BRK_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void TIM1_UP_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void TIM1_TRG_COM_IRQHandler(void);
-__attribute__((weak, alias("Default_Handler"))) void TIM1_CC_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM2_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM3_IRQHandler(void);
 __attribute__((weak, alias("Default_Handler"))) void TIM4_IRQHandler(void);
@@ -123,16 +117,16 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     DMA1_Channel5_IRQHandler,
     DMA1_Channel6_IRQHandler,
     DMA1_Channel7_IRQHandler,
-    ADC1_2_IRQHandler,
-    USB_HP_CAN1_TX_IRQHandler,
-    USB_LP_CAN1_RX0_IRQHandler,
-    CAN1_RX1_IRQHandler,
-    CAN1_SCE_IRQHandler,
+    ADC1_IRQHandler,
+    USB_HP_IRQHandler,
+    USB_LP_IRQHandler,
+    0,
+    0,
     EXTI9_5_IRQHandler,
-    TIM1_BRK_IRQHandler,
-    TIM1_UP_IRQHandler,
-    TIM1_TRG_COM_IRQHandler,
-    TIM1_CC_IRQHandler,
+    0,
+    0,
+    0,
+    0,
     TIM2_IRQHandler,
     TIM3_IRQHandler,
     TIM4_IRQHandler,
@@ -155,7 +149,7 @@ static void (*__VECTOR_TABLE[])(void) __VECTOR_TABLE_ATTRIBUTE = {
     0,
     0,
     0,
-    /* @0x0108. This is for boot in RAM mode for STM32F10x Medium Density devices. */
+    /* @0x0108. This is for boot in RAM mode for STM32F10x Medium Density USB devices. */
     (void *)0xF108F85F
 };
 
