@@ -24,3 +24,7 @@ declare_toolchain(profile_toolchain) {
 group("default") {
   public_deps = [ "${mds_pkgdir}/:mds" ]
 }
+
+config("public") {
+  configs = [ "${mds_pkgdir}/:mds_cfg" ]
+}

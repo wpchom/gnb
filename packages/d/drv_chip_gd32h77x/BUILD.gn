@@ -23,3 +23,7 @@ if (drv_chip_gd32h77x_pkgsrc != "") {
 group("default") {
   public_deps = [ "${drv_chip_gd32h77x_pkgdir}/:drv_chip_gd32h77x" ]
 }
+
+config("public") {
+  configs = [ "${drv_chip_gd32h77x_pkgdir}/:drv_chip_gd32h77x_cfg" ]
+}

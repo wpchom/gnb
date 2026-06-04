@@ -26,12 +26,13 @@ declare_args() {
   }
 }
 
-pkggroup("cmsis") {
-  configs = [ "cmsis_core" ]
+pkgcfgs("cmsis") {
 }
 
 config("stm32h7xx_device_cfg") {
   include_dirs = [ "${stm32h7xx_device_pkgdir}/Include" ]
+
+  configs = [ ":cmsis" ]
 
   assert(defined(stm32h7xx_device_pkgcfg.device),
          "`stm32h7xx_device_pkgcfg.device` must be set")
@@ -97,7 +98,6 @@ source_set("startup_stm32h7xx") {
   }
 
   public_configs = [ ":stm32h7xx_device_cfg" ]
-  public_deps = [ ":cmsis" ]
 }
 
 source_set("system_stm32h7xx") {
@@ -132,4 +132,8 @@ source_set("system_stm32h7xx_dualcore_bootcm7_cm4gated") {
 
 group("default") {
   public_deps = [ ":system_stm32h7xx" ]
+}
+
+config("public") {
+  configs = [ ":stm32h7xx_device_cfg" ]
 }

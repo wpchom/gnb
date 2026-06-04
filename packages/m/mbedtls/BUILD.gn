@@ -207,8 +207,12 @@ static_library("mbedtls") {
 }
 
 group("default") {
-  deps = [
+  public_deps = [
     ":mbedtls",
     ":mbedx509",
   ]
+}
+
+config("public") {
+  configs = [ ":mbedtls_cfg" ]
 }

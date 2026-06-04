@@ -28,8 +28,7 @@ declare_args() {
   }
 }
 
-pkggroup("cmsis") {
-  configs = [ "cmsis_core" ]
+pkgcfgs("cmsis") {
 }
 
 config("gd32e11x_firmware_cfg") {
@@ -83,11 +82,16 @@ static_library("gd32e11x_firmware") {
     defines += [ "${gd32e11x_firmware_pkgcfg.system_clock}" ]
   }
 
-  public_configs = [ ":gd32e11x_firmware_cfg" ]
-
-  public_deps = [ ":cmsis" ]
+  public_configs = [
+    ":gd32e11x_firmware_cfg",
+    ":cmsis",
+  ]
 }
 
 group("default") {
   public_deps = [ ":gd32e11x_firmware" ]
+}
+
+config("public") {
+  configs = [ ":gd32e11x_firmware_cfg" ]
 }

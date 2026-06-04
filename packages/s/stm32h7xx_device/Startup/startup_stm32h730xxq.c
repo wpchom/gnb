@@ -378,6 +378,9 @@ __attribute__((naked, noreturn)) void Reset_Handler(void)
 
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
 
+    __DSB();
+    __ISB();
+
     __enable_irq();
 
     __PROGRAM_START();

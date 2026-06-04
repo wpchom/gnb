@@ -5,7 +5,7 @@ declare_args() {
 declare_toolchain(profile_toolchain) {
 }
 
-pkggroup("demo_lib") {
+pkgdeps("demo_lib") {
 }
 
 executable("demo_app") {

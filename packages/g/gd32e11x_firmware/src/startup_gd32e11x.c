@@ -212,6 +212,9 @@ __attribute__((naked, noreturn)) void Reset_Handler(void)
 
     VectorInit((uint32_t)__VECTOR_TABLE);
 
+    __DSB();
+    __ISB();
+
     __enable_irq();
 
     __PROGRAM_START();

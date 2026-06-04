@@ -1,6 +1,8 @@
 #include "osal/lv_os_private.h"
 #include "misc/lv_log.h"
 
+#if (LV_USE_OS == LV_OS_CUSTOM)
+
 MDS_LOG_MODULE_DEFINE(lvgl);
 
 #define THREAD_TIMESLICE MDS_TIMEOUT_MS(20U)
@@ -146,7 +148,7 @@ lv_result_t lv_mutex_delete(lv_mutex_t *mutex)
  */
 lv_result_t lv_thread_sync_init(lv_thread_sync_t *sync)
 {
-    sync->sem = MDS_SemaphoreCreate("lvsem", 0, 1);
+    sync->sem = MDS_SemaphoreCreate("lvsem", 1, 1);
     if (sync->sem == NULL) {
         //
         return (LV_RESULT_INVALID);
@@ -220,3 +222,5 @@ lv_result_t lv_thread_sync_delete(lv_thread_sync_t *sync)
 
     return (LV_RESULT_OK);
 }
+
+#endif

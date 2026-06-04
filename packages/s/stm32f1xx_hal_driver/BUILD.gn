@@ -25,12 +25,13 @@ declare_args() {
   }
 }
 
-pkggroup("stm32f1xx_device") {
-  config = [ "stm32f1xx_device_cfg" ]
+pkgcfgs("stm32f1xx_device") {
 }
 
 config("stm32f1xx_hal_driver_cfg") {
   include_dirs = [ "${stm32f1xx_hal_driver_pkgdir}/Inc" ]
+
+  configs = [ ":stm32f1xx_device" ]
 
   assert(defined(stm32f1xx_hal_driver_pkgcfg.confdir),
          "stm32f1xx_hal_driver_pkgcfg.confdir is not defined")
@@ -83,8 +84,6 @@ static_library("stm32f1xx_hal_driver") {
   ]
 
   public_configs = [ ":stm32f1xx_hal_driver_cfg" ]
-
-  public_deps = [ ":stm32f1xx_device" ]
 }
 
 static_library("stm32f1xx_hal_driver_ll") {
@@ -109,10 +108,12 @@ static_library("stm32f1xx_hal_driver_ll") {
   ]
 
   public_configs = [ ":stm32f1xx_hal_driver_cfg" ]
-
-  public_deps = [ ":stm32f1xx_device" ]
 }
 
 group("default") {
   public_deps = [ ":stm32f1xx_hal_driver" ]
+}
+
+config("public") {
+  configs = [ ":stm32f1xx_hal_driver_cfg" ]
 }

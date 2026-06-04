@@ -11,7 +11,7 @@ declare_args() {
   gnb_pkgcopy = rebase_path("${gnb_build_dir}/scripts/pkgcopy.py")
 }
 
-template("pkggroup") {
+template("pkgdeps") {
   not_needed(invoker, "*")
 
   group(target_name) {
@@ -32,12 +32,29 @@ template("pkggroup") {
     } else {
       public_deps += [ "${pkgpath}/:default" ]
     }
+  }
+}
 
-    public_configs = []
+template("pkgcfgs") {
+  not_needed(invoker, "*")
+
+  config(target_name) {
+    pkgpath = exec_script(gnb_pkgload,
+                          [
+                            target_name,
+                            "--pkgs_dir",
+                            gnb_pkgs_dir,
+                            "--groupath",
+                          ],
+                          "string")
+
+    configs = []
     if (defined(invoker.configs)) {
       foreach(cfg, invoker.configs) {
-        public_configs += [ "${pkgpath}/:${cfg}" ]
+        configs += [ "${pkgpath}/:${cfg}" ]
       }
+    } else {
+      configs += [ "${pkgpath}/:public" ]
     }
   }
 }

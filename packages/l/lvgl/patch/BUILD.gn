@@ -1,16 +1,30 @@
-pkggroup("mds") {
+declare_args() {
+  lvgl_patch_pkgcfg = {
+    osal_mds = false
+  }
 }
 
-config("lv_mds_cfg") {
-  include_dirs = [ "./" ]
+if (defined(lvgl_patch_pkgcfg.osal_mds) && lvgl_patch_pkgcfg.osal_mds) {
+  pkgcfgs("mds") {
+  }
 }
 
-source_set("lv_mds") {
-  sources = [ "lv_mds.c" ]
+config("lvgl_patch_cfg") {
+  include_dirs = [ "include/" ]
+  configs = []
 
-  configs = [ "../:lvgl_cfg" ]
+  if (defined(lvgl_patch_pkgcfg.osal_mds) && lvgl_patch_pkgcfg.osal_mds) {
+    configs += [ ":mds" ]
+  }
+}
 
-  public_configs = [ ":lv_mds_cfg" ]
+source_set("lvgl_patch") {
+  sources = []
+  configs = [ "../:lvgl_src_cfg" ]
 
-  public_deps = [ ":mds" ]
+  if (defined(lvgl_patch_pkgcfg.osal_mds) && lvgl_patch_pkgcfg.osal_mds) {
+    sources += [ "src/osal/lv_mds.c" ]
+  }
+
+  public_configs = [ ":lvgl_patch_cfg" ]
 }

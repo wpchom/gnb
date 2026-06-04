@@ -23,7 +23,6 @@ declare_args() {
     confile = ""
     confdir = ""
     libnemagfx = ""
-    mds = false
   }
 }
 
@@ -31,7 +30,9 @@ declare_toolchain(profile_toolchain) {
 }
 
 config("lvgl_cfg") {
-  include_dirs = [ "${lvgl_pkgdir}/src" ]
+  include_dirs = [ "${lvgl_pkgdir}" ]
+
+  configs = [ "patch/:lvgl_patch_cfg" ]
 
   defines = []
 
@@ -46,22 +47,17 @@ config("lvgl_cfg") {
   }
 }
 
+config("lvgl_src_cfg") {
+  include_dirs = [ "${lvgl_pkgdir}/src" ]
+  configs = [ ":lvgl_cfg" ]
+}
+
 config("lvgl_demos_cfg") {
   include_dirs = [ "${lvgl_pkgdir}/demos" ]
 }
 
 config("lvgl_examples_cfg") {
   include_dirs = [ "${lvgl_pkgdir}/examples" ]
-}
-
-group("lvgl_deps") {
-  public_configs = [ ":lvgl_cfg" ]
-
-  public_deps = []
-
-  if (defined(lvgl_pkgcfg.mds) && lvgl_pkgcfg.mds) {
-    public_deps += [ "patch/:lv_mds" ]
-  }
 }
 
 source_set("lvgl_display") {
@@ -113,7 +109,7 @@ source_set("lvgl_display") {
     "${lvgl_pkgdir}/src/drivers/display/nxp_elcdif/lv_nxp_elcdif.c",
   ]
 
-  deps = [ ":lvgl_deps" ]
+  configs = [ ":lvgl_cfg" ]
 }
 
 source_set("lvgl_osal") {
@@ -144,7 +140,7 @@ source_set("lvgl_osal") {
     # "${lvgl_pkgdir}/src/osal/lv_os_custom.c",
   ]
 
-  deps = [ ":lvgl_deps" ]
+  configs = [ ":lvgl_cfg" ]
 }
 
 source_set("lvgl_acceleration") {
@@ -283,7 +279,7 @@ source_set("lvgl_acceleration") {
     }
   }
 
-  deps = [ ":lvgl_deps" ]
+  configs = [ ":lvgl_cfg" ]
 }
 
 source_set("lvgl_libs") {
@@ -438,7 +434,9 @@ source_set("lvgl_libs") {
     "${lvgl_pkgdir}/src/draw/snapshot/lv_snapshot.c",
   ]
 
-  deps = [ ":lvgl_deps" ]
+  deps = [ "patch/:lvgl_patch" ]
+
+  configs = [ ":lvgl_cfg" ]
 }
 
 source_set("lvgl_thorvg") {
@@ -497,10 +495,12 @@ source_set("lvgl_thorvg") {
 
   cflags = [ "-Wno-unused-parameter" ]
 
-  deps = [ ":lvgl_deps" ]
+  configs = [ ":lvgl_cfg" ]
 }
 
 static_library("lvgl") {
+  complete_static_lib = true
+
   sources = [
     # src
     "${lvgl_pkgdir}/src/lv_init.c",
@@ -842,7 +842,12 @@ static_library("lvgl") {
     "${lvgl_pkgdir}/src/osal/lv_os_none.c",
   ]
 
-  cflags = [ "-Wno-double-promotion" ]
+  cflags = [
+    "-Wno-double-promotion",
+    "-Wno-empty-body",
+    "-Wno-unused-parameter",
+    "-Wno-unused-but-set-variable",
+  ]
 
   deps = [
     ":lvgl_acceleration",
@@ -852,7 +857,7 @@ static_library("lvgl") {
     ":lvgl_thorvg",
   ]
 
-  public_deps = [ ":lvgl_deps" ]
+  public_configs = [ ":lvgl_cfg" ]
 }
 
 static_library("lvgl_demos") {
@@ -993,4 +998,8 @@ static_library("lvgl_examples") {
 
 group("default") {
   public_deps = [ ":lvgl" ]
+}
+
+config("public") {
+  configs = [ ":lvgl_cfg" ]
 }

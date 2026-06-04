@@ -1,0 +1,52 @@
+declare_args() {
+  segger_rtt_pkgver = ""
+  segger_rtt_pkgsrc = ""
+}
+
+if (segger_rtt_pkgsrc != "") {
+  segger_rtt_pkgdir = segger_rtt_pkgsrc
+} else {
+  segger_rtt_pkgret = exec_script(gnb_pkgload,
+                                  [
+                                    "segger_rtt:${segger_rtt_pkgver}",
+                                    "--pkgs_dir",
+                                    gnb_pkgs_dir,
+                                  ],
+                                  "string")
+  segger_rtt_pkgret = string_split(segger_rtt_pkgret, ":")
+  segger_rtt_pkgver = segger_rtt_pkgret[0]
+  segger_rtt_pkgdir = segger_rtt_pkgret[1]
+}
+
+declare_args() {
+  segger_rtt_pkgcfg = {
+    # cfgdir
+  }
+}
+
+config("segger_rtt_cfg") {
+  include_dirs = [ "${segger_rtt_pkgdir}/RTT" ]
+
+  if (defined(segger_rtt_pkgcfg.cfgdir) && segger_rtt_pkgcfg.cfgdir != "") {
+    include_dirs += [ "${segger_rtt_pkgcfg.cfgdir}" ]
+  } else {
+    include_dirs += [ "${segger_rtt_pkgdir}/Config" ]
+  }
+}
+
+static_library("segger_rtt") {
+  sources = [
+    "${segger_rtt_pkgdir}/RTT/SEGGER_RTT.c",
+    "${segger_rtt_pkgdir}/RTT/SEGGER_RTT_printf.c",
+  ]
+
+  public_configs = [ ":segger_rtt_cfg" ]
+}
+
+group("default") {
+  public_deps = [ ":segger_rtt" ]
+}
+
+config("public") {
+  configs = [ ":segger_rtt_cfg" ]
+}

@@ -22,3 +22,7 @@ if (drv_chip_stm32f1xx_pkgsrc != "") {
 group("default") {
   public_deps = [ "${drv_chip_stm32f1xx_pkgdir}/:drv_chip_stm32f1xx" ]
 }
+
+config("public") {
+  configs = [ "${drv_chip_stm32f1xx_pkgdir}/:drv_chip_stm32f1xx_cfg" ]
+}

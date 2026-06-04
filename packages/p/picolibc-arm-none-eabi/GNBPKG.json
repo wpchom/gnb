@@ -1,0 +1,35 @@
+{
+    "name": "picolibc-arm-none-eabi",
+    "versions": [
+        {
+            "version": "1.8.11-15.2.rel1",
+            "url": {
+                "*": "https://keithp.com/picolibc/dist/gnu-arm-embedded/picolibc-arm-none-eabi-{version}.zip"
+            },
+            "dir": {
+                "*": "lib/gcc/arm-none-eabi/15.2.1"
+            }
+        },
+        {
+            "version": "1.8.10-14.2.rel1",
+            "url": {
+                "*": "https://keithp.com/picolibc/dist/gnu-arm-embedded/picolibc-{version}.zip"
+            },
+            "dir": {
+                "*": "lib/gcc/arm-none-eabi/14.2.1"
+            }
+        },
+        {
+            "version": "1.8.8-13.3.rel1",
+            "dir": {
+                "*": "lib/gcc/arm-none-eabi/13.3.1"
+            }
+        },
+        {
+            "version": "1.7.8-10.3-2021.10",
+            "dir": {
+                "*": "lib/gcc/arm-none-eabi/10.3.1"
+            }
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "name": "segger_rtt",
+    "versions": [
+        {
+            "version": "7.54",
+            "url": {
+                "*": "https://github.com/SEGGERMicro/RTT/archive/refs/tags/V{version}.tar.gz"
+            },
+            "dir": {
+                "*": "RTT-{version}"
+            }
+        }
+    ]
+}

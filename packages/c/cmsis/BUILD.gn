@@ -28,3 +28,7 @@ config("cmsis_core") {
 group("default") {
   public_configs = [ ":cmsis_core" ]
 }
+
+config("public") {
+  configs = [ ":cmsis_core" ]
+}

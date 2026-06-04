@@ -118,6 +118,9 @@ def run_build(
 ):
     import time
 
+    if not os.path.exists(profile):
+        utils.error(f"Profile `{profile}` not exists.")
+
     stime = time.perf_counter()
     utils.info(f"Building action start `{builddir}` with `{profile}`")
 

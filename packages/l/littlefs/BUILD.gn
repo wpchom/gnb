@@ -71,3 +71,7 @@ static_library("littlefs") {
 group("default") {
   public_deps = [ ":littlefs" ]
 }
+
+config("public") {
+  configs = [ ":littlefs_cfg" ]
+}

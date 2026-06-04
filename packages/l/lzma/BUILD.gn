@@ -103,3 +103,7 @@ executable("lzma_util") {
 group("default") {
   public_deps = [ ":lzma_lib" ]
 }
+
+config("public") {
+  configs = [ ":lzma_cfg" ]
+}

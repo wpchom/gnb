@@ -4,6 +4,12 @@ declare_args() {
 }
 
 declare_args() {
+  arm_none_eabi_gcc_pkgcfg = {
+    picolibc = ""
+  }
+}
+
+declare_args() {
   profile_common_flags = [
     "-fdiagnostics-color=always",
     "-fmessage-length=0",
@@ -33,6 +39,29 @@ if (arm_none_eabi_gcc_pkgsrc != "") {
   arm_none_eabi_gcc_pkgret = string_split(arm_none_eabi_gcc_pkgret, ":")
   arm_none_eabi_gcc_pkgver = arm_none_eabi_gcc_pkgret[0]
   arm_none_eabi_gcc_pkgdir = arm_none_eabi_gcc_pkgret[1]
+}
+
+if (defined(arm_none_eabi_gcc_pkgcfg.picolibc) &&
+    arm_none_eabi_gcc_pkgcfg.picolibc != "") {
+  picolibc_arm_none_eabi_pkgret =
+      exec_script(
+          gnb_pkgload,
+          [
+            "picolibc-arm-none-eabi:${arm_none_eabi_gcc_pkgcfg.picolibc}",
+            "--pkgs_dir",
+            gnb_pkgs_dir,
+          ],
+          "string")
+
+  picolibc_arm_none_eabi_pkgret =
+      string_split(picolibc_arm_none_eabi_pkgret, ":")
+  picolibc_arm_none_eabi_pkgver = picolibc_arm_none_eabi_pkgret[0]
+  picolibc_arm_none_eabi_pkgdir = picolibc_arm_none_eabi_pkgret[1]
+
+  picolibc_arm_none_eabi_sysroot =
+      "--sysroot=${picolibc_arm_none_eabi_pkgdir}/../../../../arm-none-eabi"
+  picolibc_arm_none_eabi_specs =
+      "--specs=${picolibc_arm_none_eabi_pkgdir}/picolibc.specs"
 }
 
 template("arm_none_eabi_toolchain") {
@@ -206,6 +235,10 @@ template("arm_none_eabi_toolchain") {
       }
 
       command = "${ccache} ${link} ${toolchain_ldflags} {{ldflags}} -o \"${outfile}\" ${rspfile_flag}"
+      if (defined(arm_none_eabi_gcc_pkgcfg.picolibc) &&
+          arm_none_eabi_gcc_pkgcfg.picolibc != "") {
+        command += " ${picolibc_arm_none_eabi_sysroot} ${picolibc_arm_none_eabi_specs}"
+      }
       description = "LINK ${outfile}"
 
       outputs = [ outfile ]
